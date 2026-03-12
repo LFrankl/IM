@@ -19,6 +19,7 @@ const groups = computed(() => store.myGroups)
 const activeGroup = computed(() => store.activeGroup())
 
 onMounted(() => {
+  store.setActiveGroup(null)
   store.fetchMyGroups()
 })
 
