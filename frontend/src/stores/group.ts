@@ -20,7 +20,8 @@ export const useGroupStore = defineStore('group', () => {
   async function fetchMyGroups() {
     const res = await groupApi.list()
     const body = res.data as unknown as ApiResponse<GroupWithMeta[]>
-    myGroups.value = (body.data ?? []).map((g) => ({ ...g, unread_count: 0 }))
+    const existing = new Map(myGroups.value.map((g) => [g.id, g.unread_count ?? 0]))
+    myGroups.value = (body.data ?? []).map((g) => ({ ...g, unread_count: existing.get(g.id) ?? 0 }))
   }
 
   async function fetchMessages(groupId: number, beforeId?: number) {
