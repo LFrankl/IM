@@ -1,5 +1,5 @@
 import client from './client'
-import type { Group, GroupMember } from '@/types/group'
+import type { Group, GroupMember, GroupInvite } from '@/types/group'
 
 export const groupApi = {
   list() {
@@ -33,5 +33,17 @@ export const groupApi = {
     return client.get(`/api/groups/${id}/messages`, {
       params: { before_id: beforeId || undefined, limit },
     })
+  },
+  updateSettings(id: number, allowInvite: boolean) {
+    return client.put(`/api/groups/${id}/settings`, { allow_invite: allowInvite })
+  },
+  inviteMember(groupId: number, inviteeId: number) {
+    return client.post(`/api/groups/${groupId}/invites`, { invitee_id: inviteeId })
+  },
+  listMyInvites() {
+    return client.get<GroupInvite[]>('/api/groups/invites')
+  },
+  handleInvite(inviteId: number, accept: boolean) {
+    return client.put(`/api/groups/invites/${inviteId}`, { accept })
   },
 }

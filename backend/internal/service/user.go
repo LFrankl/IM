@@ -4,6 +4,9 @@ import (
 	"errors"
 	"im-backend/internal/dao"
 	"im-backend/internal/model"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 type UserService struct {
@@ -39,9 +42,14 @@ func (s *UserService) UpdateCover(userID int64, coverURL string) (*model.User, e
 	if err != nil || user == nil {
 		return nil, errors.New("用户不存在")
 	}
+	oldCover := user.Cover
 	user.Cover = coverURL
 	if err := s.userDAO.Update(user); err != nil {
 		return nil, err
+	}
+	if oldCover != "" && strings.HasPrefix(oldCover, "/uploads/covers/") {
+		oldPath := filepath.Join("./data", oldCover)
+		os.Remove(oldPath)
 	}
 	return user, nil
 }

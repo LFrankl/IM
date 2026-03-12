@@ -106,7 +106,7 @@ function getAvatarSrc(url: string | undefined) {
 <style scoped>
 .nav-bar {
   width: var(--nav-width);
-  min-width: var(--nav-width);
+  flex-shrink: 0;
   height: 100vh;
   background: var(--bg-nav);
   display: flex;

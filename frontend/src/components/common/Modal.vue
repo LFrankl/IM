@@ -75,5 +75,6 @@ const emit = defineEmits<{ close: [] }>()
 .modal-body {
   padding: 20px;
   overflow-y: auto;
+  flex: 1;
 }
 </style>

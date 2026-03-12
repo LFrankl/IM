@@ -90,6 +90,47 @@ func (d *GroupDAO) MemberCount(groupID int64) (int64, error) {
 	return count, err
 }
 
+func (d *GroupDAO) UpdateSettings(groupID int64, allowInvite bool) error {
+	return d.db.Model(&model.Group{}).Where("id = ?", groupID).Update("allow_invite", allowInvite).Error
+}
+
+// GroupInvite DAO
+
+func (d *GroupDAO) CreateInvite(inv *model.GroupInvite) error {
+	return d.db.Create(inv).Error
+}
+
+func (d *GroupDAO) GetInvite(id int64) (*model.GroupInvite, error) {
+	var inv model.GroupInvite
+	err := d.db.Preload("Group").Preload("Inviter").First(&inv, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &inv, nil
+}
+
+func (d *GroupDAO) GetPendingInvite(groupID, inviteeID int64) (*model.GroupInvite, error) {
+	var inv model.GroupInvite
+	err := d.db.Where("group_id = ? AND invitee_id = ? AND status = 'pending'", groupID, inviteeID).First(&inv).Error
+	if err != nil {
+		return nil, err
+	}
+	return &inv, nil
+}
+
+func (d *GroupDAO) UpdateInviteStatus(id int64, status string) error {
+	return d.db.Model(&model.GroupInvite{}).Where("id = ?", id).Update("status", status).Error
+}
+
+func (d *GroupDAO) ListPendingInvitesForUser(userID int64) ([]model.GroupInvite, error) {
+	var invs []model.GroupInvite
+	err := d.db.Preload("Group").Preload("Inviter").
+		Where("invitee_id = ? AND status = 'pending'", userID).
+		Order("created_at DESC").
+		Find(&invs).Error
+	return invs, err
+}
+
 // Group messages
 func (d *GroupDAO) ListGroupConversations(userID int64) ([]int64, error) {
 	var groupIDs []int64

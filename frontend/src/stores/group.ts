@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { Group, GroupMember } from '@/types/group'
+import type { Group, GroupMember, GroupInvite } from '@/types/group'
 import type { Message } from '@/types/chat'
 import { groupApi } from '@/api/group'
 import type { ApiResponse } from '@/api/client'
@@ -10,6 +10,7 @@ export const useGroupStore = defineStore('group', () => {
   const activeGroupId = ref<number | null>(null)
   const membersCache = ref<Record<number, GroupMember[]>>({})
   const messagesCache = ref<Record<number, Message[]>>({})
+  const pendingInviteCount = ref(0)
 
   const totalUnread = computed(() =>
     myGroups.value.reduce((sum, g) => sum + (g.unread_count ?? 0), 0)
@@ -22,6 +23,20 @@ export const useGroupStore = defineStore('group', () => {
     const body = res.data as unknown as ApiResponse<GroupWithMeta[]>
     const existing = new Map(myGroups.value.map((g) => [g.id, g.unread_count ?? 0]))
     myGroups.value = (body.data ?? []).map((g) => ({ ...g, unread_count: existing.get(g.id) ?? 0 }))
+  }
+
+  async function fetchPendingInviteCount() {
+    const res = await groupApi.listMyInvites()
+    const body = res.data as unknown as ApiResponse<GroupInvite[]>
+    pendingInviteCount.value = (body.data ?? []).length
+  }
+
+  function addPendingInvite() {
+    pendingInviteCount.value++
+  }
+
+  function clearPendingInvites() {
+    pendingInviteCount.value = 0
   }
 
   async function fetchMessages(groupId: number, beforeId?: number) {
@@ -91,9 +106,13 @@ export const useGroupStore = defineStore('group', () => {
     activeGroupId,
     messagesCache,
     membersCache,
+    pendingInviteCount,
     totalUnread,
     activeGroup,
     fetchMyGroups,
+    fetchPendingInviteCount,
+    addPendingInvite,
+    clearPendingInvites,
     fetchMessages,
     fetchMembers,
     setActiveGroup,

@@ -155,6 +155,80 @@ func (h *GroupHandler) DisbandGroup(c *gin.Context) {
 	response.OK(c, nil)
 }
 
+func (h *GroupHandler) UpdateSettings(c *gin.Context) {
+	groupID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的群组ID")
+		return
+	}
+	var body struct {
+		AllowInvite bool `json:"allow_invite"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, "参数错误")
+		return
+	}
+	userID := middleware.GetUserID(c)
+	if err := h.groupSvc.UpdateSettings(userID, groupID, body.AllowInvite); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.OK(c, nil)
+}
+
+func (h *GroupHandler) InviteMember(c *gin.Context) {
+	groupID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的群组ID")
+		return
+	}
+	var body struct {
+		InviteeID int64 `json:"invitee_id"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || body.InviteeID == 0 {
+		response.BadRequest(c, "参数错误")
+		return
+	}
+	userID := middleware.GetUserID(c)
+	inv, err := h.groupSvc.InviteToGroup(userID, groupID, body.InviteeID)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.OK(c, inv)
+}
+
+func (h *GroupHandler) HandleInvite(c *gin.Context) {
+	inviteID, err := strconv.ParseInt(c.Param("inviteId"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的邀请ID")
+		return
+	}
+	var body struct {
+		Accept bool `json:"accept"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.BadRequest(c, "参数错误")
+		return
+	}
+	userID := middleware.GetUserID(c)
+	if err := h.groupSvc.HandleInvite(userID, inviteID, body.Accept); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.OK(c, nil)
+}
+
+func (h *GroupHandler) ListMyInvites(c *gin.Context) {
+	userID := middleware.GetUserID(c)
+	invites, err := h.groupSvc.ListMyInvites(userID)
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+	response.OK(c, invites)
+}
+
 func (h *GroupHandler) GetMessages(c *gin.Context) {
 	groupID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {

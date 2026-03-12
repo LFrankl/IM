@@ -2,11 +2,13 @@
 import { computed } from 'vue'
 import type { Message } from '@/types/chat'
 import { useAuthStore } from '@/stores/auth'
+import { useUserCard } from '@/composables/useUserCard'
 import Avatar from '@/components/common/Avatar.vue'
 
 const props = defineProps<{ msg: Message; showName?: boolean }>()
-const emit = defineEmits<{ openCard: [userId: number] }>()
+defineEmits<{ openCard: [userId: number] }>()
 const auth = useAuthStore()
+const { openCard } = useUserCard()
 
 const isSelf = computed(() => Number(props.msg.from_id) === Number(auth.user?.id))
 
@@ -45,7 +47,7 @@ function getAvatarSrc(url: string | undefined) {
       :name="msg.from?.nickname"
       :size="36"
       style="cursor:pointer"
-      @click="emit('openCard', Number(msg.from_id))"
+      @click="openCard(Number(msg.from_id))"
     />
 
     <div class="msg-body">

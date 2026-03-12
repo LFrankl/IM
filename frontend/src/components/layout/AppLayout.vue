@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import NavBar from './NavBar.vue'
 import UserCard from '@/components/common/UserCard.vue'
 import { useUserCard } from '@/composables/useUserCard'
 
 const { cardUserId, closeCard } = useUserCard()
+
+const showCard = computed(() => cardUserId.value !== null && cardUserId.value > 0)
+const activeUserId = computed(() => cardUserId.value ?? 0)
 </script>
 
 <template>
@@ -13,7 +17,7 @@ const { cardUserId, closeCard } = useUserCard()
       <RouterView />
     </div>
   </div>
-  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="closeCard" />
+  <UserCard v-if="showCard" :user-id="activeUserId" @close="closeCard" />
 </template>
 
 <style scoped>
@@ -21,7 +25,6 @@ const { cardUserId, closeCard } = useUserCard()
   display: flex;
   height: 100vh;
   overflow: hidden;
-  min-width: 960px;
 }
 
 .app-content {

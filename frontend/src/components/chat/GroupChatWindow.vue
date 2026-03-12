@@ -7,6 +7,7 @@ import { useUserCard } from '@/composables/useUserCard'
 import { groupApi } from '@/api/group'
 import ChatBubble from '@/components/chat/ChatBubble.vue'
 import Avatar from '@/components/common/Avatar.vue'
+import GroupSettingsModal from '@/components/group/GroupSettingsModal.vue'
 import type { GroupWithMeta } from '@/stores/group'
 import type { GroupMember } from '@/types/group'
 
@@ -22,6 +23,7 @@ const inputText = ref('')
 const loadingMore = ref(false)
 const noMore = ref(false)
 const showMembers = ref(false)
+const showSettings = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const messages = computed(() => store.messagesCache[props.group.id] ?? [])
@@ -145,6 +147,12 @@ watchEffect(() => {
       <div class="chat-header-name">{{ group.name }}</div>
       <div class="header-actions">
         <span class="member-count">{{ group.member_count ?? members.length }} 人</span>
+        <button
+          v-if="isOwner || group.allow_invite"
+          class="toggle-members-btn"
+          title="群设置"
+          @click="showSettings = true"
+        >⚙️</button>
         <button class="toggle-members-btn" @click="showMembers = !showMembers" title="成员列表">
           👥
         </button>
@@ -215,6 +223,13 @@ watchEffect(() => {
       <button class="send-btn" :disabled="!inputText.trim()" @click="sendText">发送</button>
     </div>
   </div>
+
+  <GroupSettingsModal
+    v-if="showSettings"
+    :group="group"
+    @close="showSettings = false"
+    @updated="showSettings = false; $emit('settingsUpdated')"
+  />
 </template>
 <style scoped>
 .group-chat-window {

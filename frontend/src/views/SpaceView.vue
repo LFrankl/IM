@@ -8,6 +8,7 @@ import { useUserCard } from '@/composables/useUserCard'
 import type { ApiResponse } from '@/api/client'
 import type { User } from '@/types/user'
 import Avatar from '@/components/common/Avatar.vue'
+import CoverCropModal from '@/components/common/CoverCropModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -144,24 +145,35 @@ function timeAgo(dateStr: string): string {
 }
 
 const coverUploading = ref(false)
+const cropFile = ref<File | null>(null)
 const { openCard } = useUserCard()
 
 function openUserCard(userId: number) {
   if (userId !== auth.user?.id) openCard(userId)
 }
 
-async function onCoverChange(e: Event) {
+function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
+  ;(e.target as HTMLInputElement).value = ''
+  cropFile.value = file
+}
+
+async function onCropConfirm(blob: Blob) {
+  cropFile.value = null
   coverUploading.value = true
   try {
+    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' })
     const res = await userApi.uploadCover(file)
     const body = res.data as unknown as ApiResponse<User>
     auth.updateUser(body.data)
   } finally {
     coverUploading.value = false
-    ;(e.target as HTMLInputElement).value = ''
   }
+}
+
+function onCropCancel() {
+  cropFile.value = null
 }
 
 function getAvatarSrc(url: string | undefined) {
@@ -324,6 +336,13 @@ function goToSpace(userId: number) {
       </div>
     </div>
   </div>
+
+  <CoverCropModal
+    v-if="cropFile"
+    :file="cropFile"
+    @confirm="onCropConfirm"
+    @cancel="onCropCancel"
+  />
 </template>
 
 <style scoped>
@@ -347,7 +366,7 @@ function goToSpace(userId: number) {
 }
 
 .cover-bg {
-  height: 180px;
+  height: 290px;
   background: linear-gradient(135deg, #1677FF 0%, #52C41A 100%);
   background-size: cover;
   background-position: center;

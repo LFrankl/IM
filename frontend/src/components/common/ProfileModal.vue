@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { userApi } from '@/api/user'
 import type { ApiResponse } from '@/api/client'
@@ -13,27 +13,30 @@ const auth = useAuthStore()
 
 const nickname = ref(auth.user?.nickname ?? '')
 const bio = ref(auth.user?.bio ?? '')
-const uploading = ref(false)
 const saving = ref(false)
 const errorMsg = ref('')
 
-const avatarUrl = ref(auth.user?.avatar ?? '')
+// 头像：暂存本地预览，保存时才上传
+const pendingAvatarFile = ref<File | null>(null)
+const previewUrl = ref<string | null>(null)
 
-async function onFileChange(e: Event) {
+function getAvatarSrc(url: string) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
+}
+
+const displayAvatar = ref(getAvatarSrc(auth.user?.avatar ?? '') ?? '')
+
+function onFileChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
-  uploading.value = true
-  errorMsg.value = ''
-  try {
-    const res = await userApi.uploadAvatar(file)
-    const body = res.data as unknown as ApiResponse<User>
-    auth.updateUser(body.data)
-    avatarUrl.value = body.data.avatar
-  } catch {
-    errorMsg.value = '上传失败，请重试'
-  } finally {
-    uploading.value = false
-  }
+  ;(e.target as HTMLInputElement).value = ''
+  // 释放旧的预览 URL
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  previewUrl.value = URL.createObjectURL(file)
+  pendingAvatarFile.value = file
+  displayAvatar.value = previewUrl.value
 }
 
 async function save() {
@@ -44,6 +47,13 @@ async function save() {
   saving.value = true
   errorMsg.value = ''
   try {
+    // 如果有新头像，先上传
+    if (pendingAvatarFile.value) {
+      const res = await userApi.uploadAvatar(pendingAvatarFile.value)
+      const body = res.data as unknown as ApiResponse<User>
+      auth.updateUser(body.data)
+    }
+    // 更新昵称/签名
     const res = await userApi.updateProfile(nickname.value.trim(), bio.value.trim())
     const body = res.data as unknown as ApiResponse<User>
     auth.updateUser(body.data)
@@ -55,26 +65,24 @@ async function save() {
   }
 }
 
-function getAvatarSrc(url: string) {
-  if (!url) return undefined
-  if (url.startsWith('http')) return url
-  return `http://localhost:8080${url}`
-}
+onUnmounted(() => {
+  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+})
 </script>
 
 <template>
-  <Modal title="编辑资料" @close="emit('close')">
+  <Modal title="编辑资料" :width="340" @close="emit('close')">
     <div class="profile-modal">
       <!-- 头像区 -->
       <div class="avatar-section">
         <div class="avatar-wrap">
           <Avatar
-            :src="getAvatarSrc(avatarUrl)"
+            :src="displayAvatar || undefined"
             :name="auth.user?.nickname"
             :size="72"
           />
           <div class="avatar-overlay" @click="($refs.fileInput as HTMLInputElement).click()">
-            <span>{{ uploading ? '上传中…' : '更换' }}</span>
+            <span>更换</span>
           </div>
         </div>
         <input
@@ -110,7 +118,7 @@ function getAvatarSrc(url: string) {
 
 <style scoped>
 .profile-modal {
-  width: 320px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -156,22 +164,27 @@ function getAvatarSrc(url: string) {
 }
 
 .form-group label {
-  font-size: 13px;
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: var(--text-tertiary);
 }
 
 .form-input {
-  height: 36px;
-  padding: 0 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  height: 34px;
+  padding: 0 0 6px;
+  border: none;
+  border-bottom: 1px solid var(--border-light);
+  border-radius: 0;
   font-size: 14px;
   outline: none;
+  background: transparent;
+  color: var(--text-primary);
   transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .form-input:focus {
-  border-color: var(--color-primary);
+  border-bottom-color: var(--qq-blue-primary);
 }
 
 .error-msg {
@@ -182,25 +195,27 @@ function getAvatarSrc(url: string) {
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 8px;
   margin-top: 4px;
 }
 
 .btn-cancel {
   padding: 6px 16px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-normal);
   border-radius: 6px;
   background: white;
   cursor: pointer;
   font-size: 14px;
+  color: var(--text-secondary);
 }
+.btn-cancel:hover { background: var(--bg-hover); }
 
 .btn-save {
   padding: 6px 16px;
   border: none;
   border-radius: 6px;
-  background: var(--color-primary);
+  background: var(--qq-blue-primary);
   color: white;
   cursor: pointer;
   font-size: 14px;
@@ -210,4 +225,5 @@ function getAvatarSrc(url: string) {
   opacity: 0.6;
   cursor: not-allowed;
 }
+.btn-save:not(:disabled):hover { opacity: 0.88; }
 </style>

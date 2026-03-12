@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import { groupApi } from '@/api/group'
 import GroupChatWindow from '@/components/chat/GroupChatWindow.vue'
 import CreateGroupModal from '@/components/group/CreateGroupModal.vue'
+import GroupInviteModal from '@/components/group/GroupInviteModal.vue'
 import type { Group } from '@/types/group'
 import type { ApiResponse } from '@/api/client'
 
@@ -12,6 +13,7 @@ const store = useGroupStore()
 const auth = useAuthStore()
 
 const showCreate = ref(false)
+const showInvites = ref(false)
 const searchKeyword = ref('')
 const searchResults = ref<Group[]>([])
 
@@ -48,6 +50,12 @@ async function joinGroup(id: number) {
 function onCreated(g: Group) {
   store.fetchMyGroups()
   store.setActiveGroup(g.id)
+}
+
+async function onInviteAccepted() {
+  await store.fetchMyGroups()
+  store.clearPendingInvites()
+  showInvites.value = false
 }
 
 async function leaveGroup(g: GroupWithMeta) {
@@ -90,7 +98,15 @@ function avatarColor(name: string): string {
     <aside class="group-list">
       <div class="list-header">
         <span class="list-title">群组</span>
-        <button class="add-btn" title="创建群组" @click="showCreate = true">＋</button>
+        <div class="header-btns">
+          <button class="icon-btn" title="群邀请" @click="showInvites = true">
+            <span>📨</span>
+            <span v-if="store.pendingInviteCount > 0" class="invite-badge">
+              {{ store.pendingInviteCount > 99 ? '99+' : store.pendingInviteCount }}
+            </span>
+          </button>
+          <button class="add-btn" title="创建群组" @click="showCreate = true">＋</button>
+        </div>
       </div>
 
       <div class="search-wrap">
@@ -175,6 +191,11 @@ function avatarColor(name: string): string {
   </div>
 
   <CreateGroupModal v-if="showCreate" @close="showCreate = false" @created="onCreated" />
+  <GroupInviteModal
+    v-if="showInvites"
+    @close="showInvites = false"
+    @accepted="onInviteAccepted"
+  />
 </template>
 
 <style scoped>
@@ -187,7 +208,7 @@ function avatarColor(name: string): string {
 
 .group-list {
   width: var(--list-width);
-  min-width: var(--list-width);
+  flex-shrink: 0;
   background: var(--bg-list);
   border-right: 1px solid var(--border-light);
   display: flex;
@@ -205,6 +226,34 @@ function avatarColor(name: string): string {
 }
 
 .list-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+
+.header-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-btn {
+  position: relative;
+  width: 28px; height: 28px;
+  border-radius: 6px; font-size: 16px;
+  color: var(--text-secondary);
+  background: none; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.icon-btn:hover { background: var(--bg-hover); }
+
+.invite-badge {
+  position: absolute;
+  top: -3px; right: -3px;
+  min-width: 15px; height: 15px;
+  background: var(--color-badge);
+  color: white; font-size: 9px;
+  border-radius: 8px; padding: 0 3px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--bg-list);
+}
 
 .add-btn {
   width: 28px; height: 28px;

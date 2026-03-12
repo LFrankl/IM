@@ -40,6 +40,7 @@ func main() {
 		&model.Message{},
 		&model.Group{},
 		&model.GroupMember{},
+		&model.GroupInvite{},
 		&model.SpacePost{},
 		&model.SpaceComment{},
 		&model.SpaceLike{},

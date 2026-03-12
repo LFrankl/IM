@@ -42,7 +42,7 @@ const title = computed(() => {
 <style scoped>
 .list-panel {
   width: var(--list-width);
-  min-width: var(--list-width);
+  flex-shrink: 0;
   height: 100vh;
   background: var(--bg-list);
   border-right: 1px solid var(--border-light);

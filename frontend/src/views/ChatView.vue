@@ -139,7 +139,7 @@ function getAvatarSrc(url: string | undefined) {
 /* 会话列表 */
 .conv-list {
   width: var(--list-width);
-  min-width: var(--list-width);
+  flex-shrink: 0;
   background: var(--bg-list);
   border-right: 1px solid var(--border-light);
   display: flex;

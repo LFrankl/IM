@@ -20,10 +20,8 @@ let offMessage: (() => void) | null = null
 onMounted(async () => {
   if (!auth.token) return
 
-  // 建立 WS
   ws.connect(auth.token)
 
-  // 监听所有 WS 事件
   offMessage = ws.onMessage((msg: WSMessage) => {
     switch (msg.type) {
       case 'message':
@@ -46,14 +44,17 @@ onMounted(async () => {
       case 'friend_accepted':
         contacts.fetchFriends()
         break
+      case 'group_invite':
+        group.addPendingInvite()
+        break
     }
   })
 
-  // 预加载数据
   await Promise.all([
     chat.fetchConversations(),
     contacts.fetchPendingCount(),
     group.fetchMyGroups(),
+    group.fetchPendingInviteCount(),
   ])
 })
 

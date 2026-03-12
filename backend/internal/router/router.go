@@ -66,6 +66,8 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.GET("/groups", h.Group.ListMyGroups)
 		authed.POST("/groups", h.Group.CreateGroup)
 		authed.GET("/groups/search", h.Group.SearchGroups)
+		authed.GET("/groups/invites", h.Group.ListMyInvites)
+		authed.PUT("/groups/invites/:inviteId", h.Group.HandleInvite)
 		authed.GET("/groups/:id", h.Group.GetGroup)
 		authed.GET("/groups/:id/members", h.Group.GetMembers)
 		authed.POST("/groups/:id/join", h.Group.JoinGroup)
@@ -73,6 +75,8 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.DELETE("/groups/:id/members/:uid", h.Group.KickMember)
 		authed.DELETE("/groups/:id", h.Group.DisbandGroup)
 		authed.GET("/groups/:id/messages", h.Group.GetMessages)
+		authed.PUT("/groups/:id/settings", h.Group.UpdateSettings)
+		authed.POST("/groups/:id/invites", h.Group.InviteMember)
 
 		authed.GET("/space/feed", h.Space.GetFeed)
 		authed.GET("/space/users/:id/posts", h.Space.GetUserPosts)
