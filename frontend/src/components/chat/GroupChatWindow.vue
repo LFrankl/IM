@@ -3,10 +3,10 @@ import { ref, computed, watch, watchEffect } from 'vue'
 import { useGroupStore } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { useWS } from '@/composables/useWS'
+import { useUserCard } from '@/composables/useUserCard'
 import { groupApi } from '@/api/group'
 import ChatBubble from '@/components/chat/ChatBubble.vue'
 import Avatar from '@/components/common/Avatar.vue'
-import UserCard from '@/components/common/UserCard.vue'
 import type { GroupWithMeta } from '@/stores/group'
 import type { GroupMember } from '@/types/group'
 
@@ -110,7 +110,7 @@ async function kickMember(member: GroupMember) {
   await store.fetchMembers(props.group.id)
 }
 
-const cardUserId = ref<number | null>(null)
+const { openCard } = useUserCard()
 
 function getAvatarSrc(url: string | undefined) {
   if (!url) return undefined
@@ -161,6 +161,7 @@ watchEffect(() => {
           :key="msg.id"
           :msg="msg"
           :showName="true"
+          @open-card="openCard"
         />
       </div>
 
@@ -174,7 +175,7 @@ watchEffect(() => {
               :name="m.user?.nickname"
               :size="32"
               style="cursor:pointer;flex-shrink:0"
-              @click="cardUserId = m.user_id"
+              @click="openCard(m.user_id)"
             />
             <span class="member-name">
               {{ m.user?.nickname }}
@@ -214,8 +215,6 @@ watchEffect(() => {
       <button class="send-btn" :disabled="!inputText.trim()" @click="sendText">发送</button>
     </div>
   </div>
-
-  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="cardUserId = null" />
 </template>
 <style scoped>
 .group-chat-window {

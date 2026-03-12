@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import NavBar from './NavBar.vue'
+import UserCard from '@/components/common/UserCard.vue'
+import { useUserCard } from '@/composables/useUserCard'
+
+const { cardUserId, closeCard } = useUserCard()
 </script>
 
 <template>
@@ -9,6 +13,7 @@ import NavBar from './NavBar.vue'
       <RouterView />
     </div>
   </div>
+  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="closeCard" />
 </template>
 
 <style scoped>

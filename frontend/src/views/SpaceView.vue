@@ -4,10 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { spaceApi, type SpacePost, type SpaceComment } from '@/api/space'
 import { userApi } from '@/api/user'
+import { useUserCard } from '@/composables/useUserCard'
 import type { ApiResponse } from '@/api/client'
 import type { User } from '@/types/user'
 import Avatar from '@/components/common/Avatar.vue'
-import UserCard from '@/components/common/UserCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -144,10 +144,10 @@ function timeAgo(dateStr: string): string {
 }
 
 const coverUploading = ref(false)
-const cardUserId = ref<number | null>(null)
+const { openCard } = useUserCard()
 
 function openUserCard(userId: number) {
-  if (userId !== auth.user?.id) cardUserId.value = userId
+  if (userId !== auth.user?.id) openCard(userId)
 }
 
 async function onCoverChange(e: Event) {
@@ -324,8 +324,6 @@ function goToSpace(userId: number) {
       </div>
     </div>
   </div>
-
-  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="cardUserId = null" />
 </template>
 
 <style scoped>

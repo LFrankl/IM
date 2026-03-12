@@ -3,6 +3,7 @@ import { ref, computed, watch, watchEffect, nextTick } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useWS } from '@/composables/useWS'
+import { useUserCard } from '@/composables/useUserCard'
 import { chatApi } from '@/api/chat'
 import ChatBubble from './ChatBubble.vue'
 import type { Conversation } from '@/types/chat'
@@ -18,6 +19,7 @@ const inputText = ref('')
 const loadingMore = ref(false)
 const noMore = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const { openCard } = useUserCard()
 
 const messages = computed(() => chat.messagesCache[props.conv.id] ?? [])
 
@@ -164,6 +166,7 @@ watchEffect(() => {
         :key="msg.id"
         :msg="msg"
         :showName="false"
+        @open-card="openCard"
       />
     </div>
 
