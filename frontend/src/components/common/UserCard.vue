@@ -69,10 +69,36 @@ function goToSpace() {
     <div class="card-mask" @click.self="emit('close')">
       <div class="user-card">
         <!-- 封面 -->
-        <div
-          class="card-cover"
-          :style="user?.cover ? { backgroundImage: `url(${getImgSrc(user.cover)})` } : {}"
-        />
+        <div class="card-cover">
+          <svg viewBox="0 0 380 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="uc-sky" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#e8f4ff"/>
+                <stop offset="100%" stop-color="#b8d9f5"/>
+              </linearGradient>
+            </defs>
+            <!-- 天空 -->
+            <rect width="380" height="100" fill="url(#uc-sky)"/>
+            <!-- 太阳 -->
+            <circle cx="334" cy="22" r="11" fill="#ffe066" opacity="0.72"/>
+            <!-- 云朵 1 -->
+            <g opacity="0.90">
+              <ellipse cx="76" cy="37" rx="28" ry="13" fill="white"/>
+              <ellipse cx="94" cy="31" rx="20" ry="11" fill="white"/>
+              <ellipse cx="58" cy="33" rx="16" ry="9" fill="white"/>
+            </g>
+            <!-- 云朵 2 -->
+            <g opacity="0.75">
+              <ellipse cx="265" cy="29" rx="24" ry="11" fill="white"/>
+              <ellipse cx="281" cy="23" rx="17" ry="9" fill="white"/>
+              <ellipse cx="250" cy="27" rx="14" ry="8" fill="white"/>
+            </g>
+            <!-- 波浪底层 -->
+            <path d="M0,74 C55,60 125,88 190,74 C255,60 325,88 380,74 L380,100 L0,100Z" fill="#5aabf0" opacity="0.35"/>
+            <!-- 波浪前层 -->
+            <path d="M0,82 C50,70 115,94 190,82 C265,70 330,94 380,82 L380,100 L0,100Z" fill="#72b8f5" opacity="0.55"/>
+          </svg>
+        </div>
 
         <!-- 关闭 -->
         <button class="card-close" @click="emit('close')">✕</button>
@@ -173,10 +199,14 @@ function goToSpace() {
 /* 封面 */
 .card-cover {
   height: 100px;
-  background: linear-gradient(135deg, #1677FF 0%, #52C41A 100%);
-  background-size: cover;
-  background-position: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card-cover svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .card-close {
