@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useContactsStore } from '@/stores/contacts'
 import ChatWindow from '@/components/chat/ChatWindow.vue'
@@ -41,6 +41,10 @@ onMounted(() => {
     chat.setActiveConv('')
   }
   chat.fetchConversations()
+})
+
+onUnmounted(() => {
+  chat.setActiveConv(null)
 })
 
 function selectConv(convId: string) {

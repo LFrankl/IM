@@ -46,4 +46,9 @@ export const groupApi = {
   handleInvite(inviteId: number, accept: boolean) {
     return client.put(`/api/groups/invites/${inviteId}`, { accept })
   },
+  updateAvatar(id: number, file: File) {
+    const form = new FormData()
+    form.append('avatar', file)
+    return client.post<{ avatar: string }>(`/api/groups/${id}/avatar`, form)
+  },
 }

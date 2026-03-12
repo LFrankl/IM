@@ -2,10 +2,14 @@ package handler
 
 import (
 	"errors"
+	"fmt"
 	"im-backend/internal/middleware"
 	"im-backend/internal/service"
 	"im-backend/pkg/response"
+	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -217,6 +221,58 @@ func (h *GroupHandler) HandleInvite(c *gin.Context) {
 		return
 	}
 	response.OK(c, nil)
+}
+
+func (h *GroupHandler) UpdateAvatar(c *gin.Context) {
+	groupID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的群组ID")
+		return
+	}
+
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		response.BadRequest(c, "请选择图片文件")
+		return
+	}
+	if file.Size > 5<<20 {
+		response.BadRequest(c, "图片不能超过 5MB")
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true}
+	if !allowed[ext] {
+		response.BadRequest(c, "仅支持 jpg/png/gif/webp 格式")
+		return
+	}
+
+	if err := os.MkdirAll("./data/uploads/group-avatars", 0755); err != nil {
+		response.InternalError(c)
+		return
+	}
+
+	userID := middleware.GetUserID(c)
+	filename := fmt.Sprintf("group_%d_%d%s", groupID, time.Now().UnixMilli(), ext)
+	savePath := filepath.Join("./data/uploads/group-avatars", filename)
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		response.InternalError(c)
+		return
+	}
+
+	avatarURL := "/uploads/group-avatars/" + filename
+	oldAvatar, err := h.groupSvc.UpdateGroupAvatar(userID, groupID, avatarURL)
+	if err != nil {
+		os.Remove(savePath)
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	// 删除旧头像文件
+	if oldAvatar != "" {
+		os.Remove("." + oldAvatar)
+	}
+
+	response.OK(c, gin.H{"avatar": avatarURL})
 }
 
 func (h *GroupHandler) ListMyInvites(c *gin.Context) {

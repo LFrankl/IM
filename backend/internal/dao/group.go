@@ -94,6 +94,10 @@ func (d *GroupDAO) UpdateSettings(groupID int64, allowInvite bool) error {
 	return d.db.Model(&model.Group{}).Where("id = ?", groupID).Update("allow_invite", allowInvite).Error
 }
 
+func (d *GroupDAO) UpdateAvatar(groupID int64, avatar string) error {
+	return d.db.Model(&model.Group{}).Where("id = ?", groupID).Update("avatar", avatar).Error
+}
+
 // GroupInvite DAO
 
 func (d *GroupDAO) CreateInvite(inv *model.GroupInvite) error {

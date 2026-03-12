@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import NavBar from './NavBar.vue'
 import UserCard from '@/components/common/UserCard.vue'
 import { useUserCard } from '@/composables/useUserCard'
 
 const { cardUserId, closeCard } = useUserCard()
+const route = useRoute()
+
+// Close any open UserCard whenever the route changes (covers direct nav via NavBar etc.)
+watch(() => route.path, () => closeCard())
 
 const showCard = computed(() => cardUserId.value !== null && cardUserId.value > 0)
 const activeUserId = computed(() => cardUserId.value ?? 0)

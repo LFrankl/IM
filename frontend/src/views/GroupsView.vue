@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useGroupStore, type GroupWithMeta } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { groupApi } from '@/api/group'
@@ -23,6 +23,10 @@ const activeGroup = computed(() => store.activeGroup())
 onMounted(() => {
   store.setActiveGroup(null)
   store.fetchMyGroups()
+})
+
+onUnmounted(() => {
+  store.setActiveGroup(null)
 })
 
 function selectGroup(id: number) {
@@ -90,6 +94,12 @@ function avatarColor(name: string): string {
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
   return colors[Math.abs(h)]
 }
+
+function getGroupAvatarSrc(avatar: string | undefined): string | null {
+  if (!avatar) return null
+  if (avatar.startsWith('http')) return avatar
+  return `http://localhost:8080${avatar}`
+}
 </script>
 
 <template>
@@ -125,8 +135,9 @@ function avatarColor(name: string): string {
       <div v-if="searchKeyword && searchResults.length > 0" class="search-results">
         <div class="search-section-title">搜索结果</div>
         <div v-for="g in searchResults" :key="g.id" class="group-item">
-          <div class="group-avatar" :style="{ background: avatarColor(g.name) }">
-            {{ g.name.charAt(0) }}
+          <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
+            <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
+            <template v-else>{{ g.name.charAt(0) }}</template>
           </div>
           <div class="group-info">
             <span class="group-name">{{ g.name }}</span>
@@ -149,8 +160,9 @@ function avatarColor(name: string): string {
           :class="{ active: g.id === store.activeGroupId }"
           @click="selectGroup(g.id)"
         >
-          <div class="group-avatar" :style="{ background: avatarColor(g.name) }">
-            {{ g.name.charAt(0) }}
+          <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
+            <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
+            <template v-else>{{ g.name.charAt(0) }}</template>
           </div>
           <div class="group-info">
             <div class="group-row1">
@@ -291,6 +303,13 @@ function avatarColor(name: string): string {
   border-radius: var(--radius-avatar);
   display: flex; align-items: center; justify-content: center;
   color: white; font-size: 16px; font-weight: 700; flex-shrink: 0;
+  overflow: hidden;
+}
+
+.group-avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .group-info { flex: 1; min-width: 0; }

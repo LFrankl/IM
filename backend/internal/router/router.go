@@ -76,6 +76,7 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.DELETE("/groups/:id", h.Group.DisbandGroup)
 		authed.GET("/groups/:id/messages", h.Group.GetMessages)
 		authed.PUT("/groups/:id/settings", h.Group.UpdateSettings)
+		authed.POST("/groups/:id/avatar", h.Group.UpdateAvatar)
 		authed.POST("/groups/:id/invites", h.Group.InviteMember)
 
 		authed.GET("/space/feed", h.Space.GetFeed)

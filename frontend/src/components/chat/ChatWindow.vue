@@ -25,16 +25,30 @@ const showEmoji = ref(false)
 const emojiWrapRef = ref<HTMLElement | null>(null)
 const { openCard } = useUserCard()
 
+// 用 ref 追踪光标，避免点击 emoji 按钮失焦后 selectionStart 被浏览器重置
+const selStart = ref(0)
+const selEnd = ref(0)
+
+function syncSel() {
+  const el = textareaRef.value
+  if (!el) return
+  selStart.value = el.selectionStart ?? 0
+  selEnd.value = el.selectionEnd ?? 0
+}
+
 function insertEmoji(emoji: string) {
   const el = textareaRef.value
   if (!el) { inputText.value += emoji; return }
-  const start = el.selectionStart ?? inputText.value.length
-  const end = el.selectionEnd ?? inputText.value.length
+  const start = selStart.value
+  const end = selEnd.value
   inputText.value = inputText.value.slice(0, start) + emoji + inputText.value.slice(end)
+  const newPos = start + emoji.length
+  // 立即更新，保证连续插入时位置正确
+  selStart.value = newPos
+  selEnd.value = newPos
   nextTick(() => {
     el.focus()
-    const pos = start + [...emoji].length
-    el.setSelectionRange(pos, pos)
+    el.setSelectionRange(newPos, newPos)
   })
 }
 
@@ -228,6 +242,9 @@ watchEffect(() => {
         placeholder="输入消息，Enter 发送，Shift+Enter 换行"
         rows="3"
         @keydown="onKeydown"
+        @click="syncSel"
+        @keyup="syncSel"
+        @select="syncSel"
       />
       <button class="send-btn" :disabled="!inputText.trim()" @click="sendText">发送</button>
     </div>
@@ -258,6 +275,7 @@ watchEffect(() => {
 }
 
 .msg-list {
+  position: relative;
   flex: 1;
   overflow-y: auto;
   padding: 16px 20px;

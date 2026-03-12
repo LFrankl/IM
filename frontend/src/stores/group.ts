@@ -101,6 +101,12 @@ export const useGroupStore = defineStore('group', () => {
     if (activeGroupId.value === id) activeGroupId.value = null
   }
 
+  function updateGroupAvatar(groupId: number, avatarUrl: string) {
+    myGroups.value = myGroups.value.map((g) =>
+      g.id === groupId ? { ...g, avatar: avatarUrl } : g
+    )
+  }
+
   return {
     myGroups,
     activeGroupId,
@@ -119,6 +125,7 @@ export const useGroupStore = defineStore('group', () => {
     receiveMessage,
     confirmGroupSent,
     removeGroup,
+    updateGroupAvatar,
   }
 })
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { userApi } from '@/api/user'
@@ -54,8 +54,9 @@ function timeAgo(dateStr: string): string {
   return d < 30 ? `${d}天前` : new Date(dateStr).toLocaleDateString()
 }
 
-function goToSpace() {
+async function goToSpace() {
   emit('close')
+  await nextTick()
   if (props.userId === auth.user?.id) {
     router.push({ name: 'space' })
   } else {

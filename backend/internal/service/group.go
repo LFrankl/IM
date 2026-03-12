@@ -204,6 +204,22 @@ type GroupDTO struct {
 	LastMessage *model.Message `json:"last_message"`
 }
 
+// UpdateGroupAvatar 群主更换群头像，返回旧头像路径（供调用方删除文件）
+func (s *GroupService) UpdateGroupAvatar(ownerID, groupID int64, avatarURL string) (string, error) {
+	g, err := s.groupDAO.GetByID(groupID)
+	if err != nil {
+		return "", errors.New("群组不存在")
+	}
+	if g.OwnerID != ownerID {
+		return "", ErrNotGroupOwner
+	}
+	oldAvatar := g.Avatar
+	if err := s.groupDAO.UpdateAvatar(groupID, avatarURL); err != nil {
+		return "", err
+	}
+	return oldAvatar, nil
+}
+
 // UpdateSettings 群主修改群设置
 func (s *GroupService) UpdateSettings(userID, groupID int64, allowInvite bool) error {
 	g, err := s.groupDAO.GetByID(groupID)
