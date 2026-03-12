@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Message } from '@/types/chat'
 import { useAuthStore } from '@/stores/auth'
 import Avatar from '@/components/common/Avatar.vue'
+import UserCard from '@/components/common/UserCard.vue'
 
 const props = defineProps<{ msg: Message; showName?: boolean }>()
 const auth = useAuthStore()
 
 const isSelf = computed(() => Number(props.msg.from_id) === Number(auth.user?.id))
+const cardUserId = ref<number | null>(null)
 
 const textContent = computed(() => {
   if (props.msg.msg_type !== 'text') return ''
@@ -33,6 +35,10 @@ function getAvatarSrc(url: string | undefined) {
   if (url.startsWith('http')) return url
   return `http://localhost:8080${url}`
 }
+
+function openCard(userId: number | undefined) {
+  if (userId) cardUserId.value = userId
+}
 </script>
 
 <template>
@@ -43,6 +49,8 @@ function getAvatarSrc(url: string | undefined) {
       :src="getAvatarSrc(msg.from?.avatar)"
       :name="msg.from?.nickname"
       :size="36"
+      style="cursor:pointer"
+      @click="openCard(Number(msg.from_id))"
     />
 
     <div class="msg-body">
@@ -78,6 +86,12 @@ function getAvatarSrc(url: string | undefined) {
       :size="36"
     />
   </div>
+
+  <UserCard
+    v-if="cardUserId"
+    :user-id="cardUserId"
+    @close="cardUserId = null"
+  />
 </template>
 
 <style scoped>

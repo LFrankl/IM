@@ -7,6 +7,7 @@ import { userApi } from '@/api/user'
 import type { ApiResponse } from '@/api/client'
 import type { User } from '@/types/user'
 import Avatar from '@/components/common/Avatar.vue'
+import UserCard from '@/components/common/UserCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -133,6 +134,11 @@ function timeAgo(dateStr: string): string {
 }
 
 const coverUploading = ref(false)
+const cardUserId = ref<number | null>(null)
+
+function openUserCard(userId: number) {
+  if (userId !== auth.user?.id) cardUserId.value = userId
+}
 
 async function onCoverChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
@@ -224,7 +230,7 @@ function goToSpace(userId: number) {
               :src="getAvatarSrc(post.user?.avatar)"
               :name="post.user?.nickname"
               :size="40"
-              @click="goToSpace(post.user_id)"
+              @click="openUserCard(post.user_id)"
             />
             <div class="post-meta">
               <span class="post-author" @click="goToSpace(post.user_id)">
@@ -310,6 +316,8 @@ function goToSpace(userId: number) {
       </div>
     </div>
   </div>
+
+  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="cardUserId = null" />
 </template>
 
 <style scoped>

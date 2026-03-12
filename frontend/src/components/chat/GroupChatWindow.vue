@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useWS } from '@/composables/useWS'
 import { groupApi } from '@/api/group'
 import ChatBubble from '@/components/chat/ChatBubble.vue'
+import Avatar from '@/components/common/Avatar.vue'
+import UserCard from '@/components/common/UserCard.vue'
 import type { GroupWithMeta } from '@/stores/group'
 import type { GroupMember } from '@/types/group'
 
@@ -108,11 +110,12 @@ async function kickMember(member: GroupMember) {
   await store.fetchMembers(props.group.id)
 }
 
-function avatarColor(name: string): string {
-  const colors = ['#1677FF', '#52C41A', '#FA8C16', '#EB2F96', '#722ED1', '#13C2C2']
-  let h = 0
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
-  return colors[Math.abs(h)]
+const cardUserId = ref<number | null>(null)
+
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
 }
 
 watch(() => props.group.id, () => {
@@ -166,9 +169,13 @@ watchEffect(() => {
         <div class="members-title">群成员</div>
         <div class="members-list">
           <div v-for="m in members" :key="m.user_id" class="member-item">
-            <div class="member-avatar" :style="{ background: avatarColor(m.user?.nickname ?? '') }">
-              {{ (m.user?.nickname || '?').charAt(0).toUpperCase() }}
-            </div>
+            <Avatar
+              :src="getAvatarSrc(m.user?.avatar)"
+              :name="m.user?.nickname"
+              :size="32"
+              style="cursor:pointer;flex-shrink:0"
+              @click="cardUserId = m.user_id"
+            />
             <span class="member-name">
               {{ m.user?.nickname }}
               <span v-if="m.user_id === group.owner_id" class="owner-tag">群主</span>
@@ -207,6 +214,8 @@ watchEffect(() => {
       <button class="send-btn" :disabled="!inputText.trim()" @click="sendText">发送</button>
     </div>
   </div>
+
+  <UserCard v-if="cardUserId" :user-id="cardUserId" @close="cardUserId = null" />
 </template>
 <style scoped>
 .group-chat-window {
@@ -310,15 +319,6 @@ watchEffect(() => {
 }
 
 .member-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
   flex-shrink: 0;
 }
 
