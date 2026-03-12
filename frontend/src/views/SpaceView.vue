@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { spaceApi, type SpacePost, type SpaceComment } from '@/api/space'
 import type { ApiResponse } from '@/api/client'
+import Avatar from '@/components/common/Avatar.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -129,11 +130,10 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-function avatarColor(name: string): string {
-  const colors = ['#1677FF', '#52C41A', '#FA8C16', '#EB2F96', '#722ED1', '#13C2C2']
-  let h = 0
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
-  return colors[Math.abs(h)]
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
 }
 
 function goToSpace(userId: number) {
@@ -149,12 +149,12 @@ function goToSpace(userId: number) {
       <div class="space-header">
         <div class="cover-bg"></div>
         <div class="profile-info">
-          <div
+          <Avatar
             class="profile-avatar"
-            :style="{ background: avatarColor(auth.user?.nickname ?? '') }"
-          >
-            {{ (auth.user?.nickname ?? '?').charAt(0).toUpperCase() }}
-          </div>
+            :src="getAvatarSrc(isSelf ? auth.user?.avatar : posts[0]?.user?.avatar)"
+            :name="isSelf ? auth.user?.nickname : (posts[0]?.user?.nickname ?? '用户')"
+            :size="80"
+          />
           <div class="profile-text">
             <div class="profile-name">
               {{ isSelf ? auth.user?.nickname : posts[0]?.user?.nickname ?? '用户空间' }}
@@ -186,13 +186,13 @@ function goToSpace(userId: number) {
         <div v-for="post in posts" :key="post.id" class="post-card">
           <!-- 帖子头部 -->
           <div class="post-header">
-            <div
+            <Avatar
               class="post-avatar"
-              :style="{ background: avatarColor(post.user?.nickname ?? '') }"
+              :src="getAvatarSrc(post.user?.avatar)"
+              :name="post.user?.nickname"
+              :size="40"
               @click="goToSpace(post.user_id)"
-            >
-              {{ (post.user?.nickname ?? '?').charAt(0).toUpperCase() }}
-            </div>
+            />
             <div class="post-meta">
               <span class="post-author" @click="goToSpace(post.user_id)">
                 {{ post.user?.nickname }}
@@ -316,18 +316,9 @@ function goToSpace(userId: number) {
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 16px;
   border: 4px solid white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
-  flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  flex-shrink: 0;
 }
 
 .profile-text {
@@ -410,15 +401,6 @@ function goToSpace(userId: number) {
 }
 
 .post-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
   cursor: pointer;
   flex-shrink: 0;
 }
