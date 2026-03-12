@@ -1,4 +1,4 @@
-# IM — Web 即时通信系统
+# IM — Web Instant Messaging
 
 仿 QQ 风格的 Web 即时通信系统，支持私聊、群聊、QQ 空间等核心功能。
 
@@ -19,6 +19,16 @@
 - **私聊**：实时消息、图片/文件发送、历史记录、未读计数
 - **群聊**：创建群、搜索加入、退出/解散、踢人、实时群消息
 - **QQ 空间**：发布动态（文字+图片）、点赞、评论、好友动态 Feed、个人主页
+
+## UI 设计
+
+仿 QQ NT（新技术）桌面端风格，三栏布局：
+
+- 导航栏（68px）：深色背景 `#2C2C2C`，功能区入口
+- 列表面板（280px）：浅灰背景 `#F5F5F5`，会话/联系人列表
+- 内容区：主要交互区域
+
+主色调为 `#1677FF`，气泡颜色区分：自己（`#C6E2FF`）/ 对方（`#FFFFFF`）。
 
 ## 项目结构
 
@@ -67,6 +77,8 @@ npm run dev
 # 访问 http://localhost:5173
 ```
 
+> 前端通过 Vite proxy 将 `/api` 和 `/ws` 请求转发到 `:8080`，无需额外跨域配置。
+
 ## WebSocket 协议
 
 连接地址：`ws://localhost:8080/ws?token=<jwt>`
@@ -102,3 +114,16 @@ cors:
   allow_origins:
     - "http://localhost:5173"
 ```
+
+## 数据存储
+
+| 资源 | 路径 |
+|------|------|
+| 数据库文件 | `backend/data/im.db` |
+| 上传文件 | `backend/data/uploads/` |
+| 配置文件 | `backend/config/config.yaml` |
+
+## 开发文档
+
+- `docs/style-guide.md` — UI 设计规范（色彩、排版、组件）
+- `docs/dev-progress.md` — 架构说明、数据库设计、阶段计划
