@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useContactsStore } from '@/stores/contacts'
 import ChatWindow from '@/components/chat/ChatWindow.vue'
+import Avatar from '@/components/common/Avatar.vue'
 import type { Conversation } from '@/types/chat'
 
 const chat = useChatStore()
@@ -69,15 +70,10 @@ function timeStr(dateStr: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`
 }
 
-function avatarInitial(name: string): string {
-  return (name || '?').charAt(0).toUpperCase()
-}
-
-function avatarColor(name: string): string {
-  const colors = ['#1677FF', '#52C41A', '#FA8C16', '#EB2F96', '#722ED1', '#13C2C2']
-  let h = 0
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length
-  return colors[Math.abs(h)]
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
 }
 </script>
 
@@ -98,9 +94,7 @@ function avatarColor(name: string): string {
           @click="selectConv(conv.id)"
         >
           <!-- 头像 -->
-          <div class="conv-avatar" :style="{ background: avatarColor(conv.name) }">
-            <span>{{ avatarInitial(conv.name) }}</span>
-          </div>
+          <Avatar :src="getAvatarSrc(conv.avatar)" :name="conv.name" :size="40" />
 
           <!-- 信息 -->
           <div class="conv-info">
@@ -187,15 +181,6 @@ function avatarColor(name: string): string {
 }
 
 .conv-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-avatar);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
   flex-shrink: 0;
 }
 

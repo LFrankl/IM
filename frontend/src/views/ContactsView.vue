@@ -37,6 +37,12 @@ const filteredGroups = computed(() => {
   })).filter((g) => g.friends.length > 0)
 })
 
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
+}
+
 function toggleGroup(groupName: string) {
   groupCollapsed.value[groupName] = !groupCollapsed.value[groupName]
 }
@@ -127,6 +133,7 @@ function sendMessage(f: Friendship) {
               @click="selectFriend(f)"
             >
               <Avatar
+                :src="getAvatarSrc(f.friend?.avatar)"
                 :name="f.friend?.nickname"
                 :size="36"
                 :status="f.friend?.status"
@@ -162,7 +169,7 @@ function sendMessage(f: Friendship) {
             :key="req.id"
             class="request-item"
           >
-            <Avatar :name="req.from?.nickname" :size="44" />
+            <Avatar :src="getAvatarSrc(req.from?.avatar)" :name="req.from?.nickname" :size="44" />
             <div class="request-info">
               <div class="request-name">{{ req.from?.nickname }}</div>
               <div class="request-msg">{{ req.message || '请求加你为好友' }}</div>
@@ -191,6 +198,7 @@ function sendMessage(f: Friendship) {
         <div class="profile-panel">
           <div class="profile-avatar-area">
             <Avatar
+              :src="getAvatarSrc(selectedFriendship.friend?.avatar)"
               :name="selectedFriendship.friend?.nickname"
               :size="80"
               :status="selectedFriendship.friend?.status"
