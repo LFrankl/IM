@@ -12,17 +12,27 @@ const { openCard } = useUserCard()
 
 const isSelf = computed(() => Number(props.msg.from_id) === Number(auth.user?.id))
 
-const textContent = computed(() => {
-  if (props.msg.msg_type !== 'text') return ''
+// content 字段在数据库/WS 里始终是 JSON 字符串，统一解析
+const parsedContent = computed<Record<string, any>>(() => {
   try {
-    const c = typeof props.msg.content === 'string'
+    return typeof props.msg.content === 'string'
       ? JSON.parse(props.msg.content)
-      : props.msg.content
-    return (c as { text: string }).text
+      : (props.msg.content as any) ?? {}
   } catch {
-    return String(props.msg.content)
+    return {}
   }
 })
+
+const textContent = computed(() => {
+  if (props.msg.msg_type !== 'text') return ''
+  return parsedContent.value.text ?? String(props.msg.content)
+})
+
+function getMediaSrc(url: string | undefined) {
+  if (!url) return ''
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
+}
 
 const timeStr = computed(() => {
   const d = new Date(props.msg.created_at)
@@ -62,12 +72,14 @@ function getAvatarSrc(url: string | undefined) {
             <span class="selectable">{{ textContent }}</span>
           </template>
           <template v-else-if="msg.msg_type === 'image'">
-            <img :src="(msg.content as any).url" class="msg-img" />
+            <img :src="getMediaSrc(parsedContent.url)" class="msg-img" />
           </template>
           <template v-else-if="msg.msg_type === 'file'">
             <div class="msg-file">
               <span class="file-icon">📎</span>
-              <span class="file-name">{{ (msg.content as any).name }}</span>
+              <a :href="getMediaSrc(parsedContent.url)" target="_blank" class="file-name">
+                {{ parsedContent.name }}
+              </a>
             </div>
           </template>
         </div>

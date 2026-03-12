@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect } from 'vue'
+import { ref, computed, watch, watchEffect, nextTick, onMounted, onUnmounted } from 'vue'
 import { useGroupStore } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { useWS } from '@/composables/useWS'
@@ -8,6 +8,7 @@ import { groupApi } from '@/api/group'
 import ChatBubble from '@/components/chat/ChatBubble.vue'
 import Avatar from '@/components/common/Avatar.vue'
 import GroupSettingsModal from '@/components/group/GroupSettingsModal.vue'
+import EmojiPicker from '@/components/common/EmojiPicker.vue'
 import type { GroupWithMeta } from '@/stores/group'
 import type { GroupMember } from '@/types/group'
 
@@ -25,6 +26,31 @@ const noMore = ref(false)
 const showMembers = ref(false)
 const showSettings = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
+const showEmoji = ref(false)
+const emojiWrapRef = ref<HTMLElement | null>(null)
+
+function insertEmoji(emoji: string) {
+  const el = textareaRef.value
+  if (!el) { inputText.value += emoji; return }
+  const start = el.selectionStart ?? inputText.value.length
+  const end = el.selectionEnd ?? inputText.value.length
+  inputText.value = inputText.value.slice(0, start) + emoji + inputText.value.slice(end)
+  nextTick(() => {
+    el.focus()
+    const pos = start + [...emoji].length
+    el.setSelectionRange(pos, pos)
+  })
+}
+
+function onDocMousedown(e: MouseEvent) {
+  if (showEmoji.value && emojiWrapRef.value && !emojiWrapRef.value.contains(e.target as Node)) {
+    showEmoji.value = false
+  }
+}
+
+onMounted(() => document.addEventListener('mousedown', onDocMousedown))
+onUnmounted(() => document.removeEventListener('mousedown', onDocMousedown))
 
 const messages = computed(() => store.messagesCache[props.group.id] ?? [])
 const members = computed(() => store.membersCache[props.group.id] ?? [])
@@ -201,6 +227,17 @@ watchEffect(() => {
 
     <!-- 工具栏 -->
     <div class="toolbar">
+      <div class="emoji-wrap" ref="emojiWrapRef">
+        <button class="tool-btn" title="表情" @click="showEmoji = !showEmoji">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="15" y1="9" x2="15.01" y2="9" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <EmojiPicker v-if="showEmoji" @pick="insertEmoji" />
+      </div>
       <button class="tool-btn" @click="fileInputRef?.click()" title="发图片/文件">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
           <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -214,6 +251,7 @@ watchEffect(() => {
     <!-- 输入区 -->
     <div class="input-area">
       <textarea
+        ref="textareaRef"
         v-model="inputText"
         class="chat-input"
         placeholder="输入消息，Enter 发送，Shift+Enter 换行"
@@ -371,6 +409,10 @@ watchEffect(() => {
 }
 
 /* 输入区（复用 ChatWindow 样式） */
+.emoji-wrap {
+  position: relative;
+}
+
 .toolbar {
   padding: 6px 16px 0;
   display: flex;
