@@ -32,6 +32,10 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = body.data
   }
 
+  function updateUser(updated: User) {
+    user.value = updated
+  }
+
   async function logout() {
     try {
       await authApi.logout()
@@ -42,5 +46,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, token, isLoggedIn, login, register, fetchMe, logout }
+  return { user, token, isLoggedIn, login, register, fetchMe, updateUser, logout }
 })

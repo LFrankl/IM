@@ -45,8 +45,8 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 
 		authed.GET("/users/search", h.User.Search)
 		authed.GET("/users/:id", h.User.GetUser)
-		authed.PUT("/users/me", stub)
-		authed.POST("/users/me/avatar", stub)
+		authed.PUT("/users/me", h.User.UpdateProfile)
+		authed.POST("/users/me/avatar", h.User.UploadAvatar)
 
 		authed.GET("/friends", h.Friend.ListFriends)
 		authed.POST("/friends/requests", h.Friend.SendRequest)

@@ -4,8 +4,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useContactsStore } from '@/stores/contacts'
 import { useChatStore } from '@/stores/chat'
 import { useGroupStore } from '@/stores/group'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Avatar from '@/components/common/Avatar.vue'
+import ProfileModal from '@/components/common/ProfileModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -13,6 +14,8 @@ const auth = useAuthStore()
 const contacts = useContactsStore()
 const chat = useChatStore()
 const group = useGroupStore()
+
+const showProfile = ref(false)
 
 const navItems = [
   { name: 'chat',     label: '消息',   icon: '💬' },
@@ -45,13 +48,20 @@ function badgeFor(name: string) {
   if (name === 'groups') return groupUnread.value
   return 0
 }
+
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
+}
 </script>
 
 <template>
   <nav class="nav-bar">
     <!-- 用户头像 -->
-    <div class="user-avatar-wrap" @click="navigate('space')">
+    <div class="user-avatar-wrap" @click="showProfile = true">
       <Avatar
+        :src="getAvatarSrc(auth.user?.avatar)"
         :name="auth.user?.nickname"
         :size="40"
         :status="auth.user?.status"
@@ -88,6 +98,9 @@ function badgeFor(name: string) {
       </div>
     </div>
   </nav>
+
+  <!-- 资料编辑弹窗 -->
+  <ProfileModal v-if="showProfile" @close="showProfile = false" />
 </template>
 
 <style scoped>
