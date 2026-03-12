@@ -8,6 +8,7 @@ type User struct {
 	Password  string    `gorm:"not null" json:"-"`
 	Nickname  string    `gorm:"not null;size:50" json:"nickname"`
 	Avatar    string    `gorm:"default:''" json:"avatar"`
+	Cover     string    `gorm:"default:''" json:"cover"`
 	Bio       string    `gorm:"default:''" json:"bio"`
 	Status    string    `gorm:"default:'offline'" json:"status"` // online/offline/busy
 	CreatedAt time.Time `json:"created_at"`

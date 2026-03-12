@@ -15,6 +15,13 @@ export const userApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+  uploadCover(file: File) {
+    const form = new FormData()
+    form.append('cover', file)
+    return client.post<User>('/api/users/me/cover', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
   updateProfile(nickname: string, bio: string) {
     return client.put<User>('/api/users/me', { nickname, bio })
   },

@@ -47,6 +47,7 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.GET("/users/:id", h.User.GetUser)
 		authed.PUT("/users/me", h.User.UpdateProfile)
 		authed.POST("/users/me/avatar", h.User.UploadAvatar)
+		authed.POST("/users/me/cover", h.User.UploadCover)
 
 		authed.GET("/friends", h.Friend.ListFriends)
 		authed.POST("/friends/requests", h.Friend.SendRequest)

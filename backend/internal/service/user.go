@@ -34,6 +34,18 @@ func (s *UserService) UpdateAvatar(userID int64, avatarURL string) (*model.User,
 	return user, nil
 }
 
+func (s *UserService) UpdateCover(userID int64, coverURL string) (*model.User, error) {
+	user, err := s.userDAO.GetByID(userID)
+	if err != nil || user == nil {
+		return nil, errors.New("用户不存在")
+	}
+	user.Cover = coverURL
+	if err := s.userDAO.Update(user); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
 func (s *UserService) UpdateProfile(userID int64, nickname, bio string) (*model.User, error) {
 	if nickname == "" {
 		return nil, errors.New("昵称不能为空")

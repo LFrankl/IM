@@ -5,6 +5,7 @@ export interface User {
   username: string
   nickname: string
   avatar: string
+  cover: string
   bio: string
   status: UserStatus
   created_at: string

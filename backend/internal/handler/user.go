@@ -109,3 +109,39 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	}
 	response.OK(c, user)
 }
+
+func (h *UserHandler) UploadCover(c *gin.Context) {
+	file, err := c.FormFile("cover")
+	if err != nil {
+		response.BadRequest(c, "请选择图片文件")
+		return
+	}
+	if file.Size > 10<<20 {
+		response.BadRequest(c, "图片不能超过 10MB")
+		return
+	}
+	ext := filepath.Ext(file.Filename)
+	allowed := map[string]bool{".jpg": true, ".jpeg": true, ".png": true, ".gif": true, ".webp": true}
+	if !allowed[ext] {
+		response.BadRequest(c, "仅支持 jpg/png/gif/webp 格式")
+		return
+	}
+	if err := os.MkdirAll("./data/uploads/covers", 0755); err != nil {
+		response.InternalError(c)
+		return
+	}
+	userID := middleware.GetUserID(c)
+	filename := fmt.Sprintf("cover_%d_%d%s", userID, time.Now().UnixMilli(), ext)
+	savePath := filepath.Join("./data/uploads/covers", filename)
+	if err := c.SaveUploadedFile(file, savePath); err != nil {
+		response.InternalError(c)
+		return
+	}
+	coverURL := "/uploads/covers/" + filename
+	user, err := h.userSvc.UpdateCover(userID, coverURL)
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+	response.OK(c, user)
+}

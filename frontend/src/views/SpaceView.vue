@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { spaceApi, type SpacePost, type SpaceComment } from '@/api/space'
+import { userApi } from '@/api/user'
 import type { ApiResponse } from '@/api/client'
+import type { User } from '@/types/user'
 import Avatar from '@/components/common/Avatar.vue'
 
 const route = useRoute()
@@ -130,6 +132,22 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
+const coverUploading = ref(false)
+
+async function onCoverChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  coverUploading.value = true
+  try {
+    const res = await userApi.uploadCover(file)
+    const body = res.data as unknown as ApiResponse<User>
+    auth.updateUser(body.data)
+  } finally {
+    coverUploading.value = false
+    ;(e.target as HTMLInputElement).value = ''
+  }
+}
+
 function getAvatarSrc(url: string | undefined) {
   if (!url) return undefined
   if (url.startsWith('http')) return url
@@ -147,7 +165,22 @@ function goToSpace(userId: number) {
     <div class="space-main">
       <!-- 顶部封面 + 个人信息 -->
       <div class="space-header">
-        <div class="cover-bg"></div>
+        <div
+          class="cover-bg"
+          :style="auth.user?.cover && isSelf ? { backgroundImage: `url(${getAvatarSrc(auth.user.cover)})` } : {}"
+          @click="isSelf && ($refs.coverInput as HTMLInputElement).click()"
+        >
+          <div v-if="isSelf" class="cover-upload-hint">
+            <span>{{ coverUploading ? '上传中…' : '点击更换封面' }}</span>
+          </div>
+          <input
+            ref="coverInput"
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            style="display:none"
+            @change="onCoverChange"
+          />
+        </div>
         <div class="profile-info">
           <Avatar
             class="profile-avatar"
@@ -302,7 +335,35 @@ function goToSpace(userId: number) {
 .cover-bg {
   height: 180px;
   background: linear-gradient(135deg, #1677FF 0%, #52C41A 100%);
+  background-size: cover;
+  background-position: center;
   border-radius: 0 0 12px 12px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.cover-upload-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.cover-bg:hover .cover-upload-hint {
+  opacity: 1;
+}
+
+.cover-upload-hint span {
+  color: white;
+  font-size: 14px;
+  background: rgba(0,0,0,0.4);
+  padding: 6px 16px;
+  border-radius: 20px;
 }
 
 .profile-info {
