@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Message } from '@/types/chat'
 import { useAuthStore } from '@/stores/auth'
+import Avatar from '@/components/common/Avatar.vue'
 
 const props = defineProps<{ msg: Message; showName?: boolean }>()
 const auth = useAuthStore()
@@ -27,35 +28,37 @@ const timeStr = computed(() => {
   return `${h}:${m}`
 })
 
-function avatarInitial(name?: string) {
-  return (name || '?').charAt(0).toUpperCase()
+function getAvatarSrc(url: string | undefined) {
+  if (!url) return undefined
+  if (url.startsWith('http')) return url
+  return `http://localhost:8080${url}`
 }
 </script>
 
 <template>
   <div class="msg-row" :class="{ self: isSelf }">
     <!-- 对方头像 -->
-    <div v-if="!isSelf" class="avatar">
-      <span>{{ avatarInitial(msg.from?.nickname) }}</span>
-    </div>
+    <Avatar
+      v-if="!isSelf"
+      :src="getAvatarSrc(msg.from?.avatar)"
+      :name="msg.from?.nickname"
+      :size="36"
+    />
 
     <div class="msg-body">
-      <!-- 发送者名（群聊时显示，私聊对方侧显示） -->
+      <!-- 发送者名（群聊时显示） -->
       <div v-if="showName && !isSelf" class="msg-sender">
         {{ msg.from?.nickname }}
       </div>
 
       <div class="bubble-wrap">
         <div class="bubble" :class="{ 'bubble-self': isSelf, 'bubble-other': !isSelf }">
-          <!-- 文本 -->
           <template v-if="msg.msg_type === 'text'">
             <span class="selectable">{{ textContent }}</span>
           </template>
-          <!-- 图片 -->
           <template v-else-if="msg.msg_type === 'image'">
             <img :src="(msg.content as any).url" class="msg-img" />
           </template>
-          <!-- 文件 -->
           <template v-else-if="msg.msg_type === 'file'">
             <div class="msg-file">
               <span class="file-icon">📎</span>
@@ -68,9 +71,12 @@ function avatarInitial(name?: string) {
     </div>
 
     <!-- 自己头像 -->
-    <div v-if="isSelf" class="avatar avatar-self">
-      <span>{{ avatarInitial(auth.user?.nickname) }}</span>
-    </div>
+    <Avatar
+      v-if="isSelf"
+      :src="getAvatarSrc(auth.user?.avatar)"
+      :name="auth.user?.nickname"
+      :size="36"
+    />
   </div>
 </template>
 
@@ -84,24 +90,6 @@ function avatarInitial(name?: string) {
 
 .msg-row.self {
   justify-content: flex-end;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-avatar);
-  background: var(--qq-blue-primary);
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.avatar-self {
-  background: #52C41A;
 }
 
 .msg-body {
