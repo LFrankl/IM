@@ -22,6 +22,7 @@ const targetUserId = computed(() => {
 const isSelf = computed(() => targetUserId.value === auth.user?.id)
 
 const posts = ref<SpacePost[]>([])
+const targetUser = ref<User | null>(null)
 const loading = ref(false)
 const noMore = ref(false)
 const newContent = ref('')
@@ -29,10 +30,19 @@ const posting = ref(false)
 const commentInputs = ref<Record<number, string>>({})
 const expandedComments = ref<Set<number>>(new Set())
 
+// 当前空间展示的用户信息（自己用 auth.user，别人单独拉）
+const spaceUser = computed(() => isSelf.value ? auth.user : targetUser.value)
+
 // 切换空间主人时重置
-watch(targetUserId, () => {
+watch(targetUserId, async () => {
   posts.value = []
   noMore.value = false
+  targetUser.value = null
+  if (!isSelf.value) {
+    const res = await userApi.getById(targetUserId.value)
+    const body = res.data as unknown as ApiResponse<User>
+    targetUser.value = body.data
+  }
   loadPosts()
 }, { immediate: true })
 
@@ -173,7 +183,7 @@ function goToSpace(userId: number) {
       <div class="space-header">
         <div
           class="cover-bg"
-          :style="auth.user?.cover && isSelf ? { backgroundImage: `url(${getAvatarSrc(auth.user.cover)})` } : {}"
+          :style="spaceUser?.cover ? { backgroundImage: `url(${getAvatarSrc(spaceUser.cover)})` } : {}"
           @click="isSelf && ($refs.coverInput as HTMLInputElement).click()"
         >
           <div v-if="isSelf" class="cover-upload-hint">
@@ -190,15 +200,13 @@ function goToSpace(userId: number) {
         <div class="profile-info">
           <Avatar
             class="profile-avatar"
-            :src="getAvatarSrc(isSelf ? auth.user?.avatar : posts[0]?.user?.avatar)"
-            :name="isSelf ? auth.user?.nickname : (posts[0]?.user?.nickname ?? '用户')"
+            :src="getAvatarSrc(spaceUser?.avatar)"
+            :name="spaceUser?.nickname ?? '用户'"
             :size="80"
           />
           <div class="profile-text">
-            <div class="profile-name">
-              {{ isSelf ? auth.user?.nickname : posts[0]?.user?.nickname ?? '用户空间' }}
-            </div>
-            <div class="profile-bio">{{ auth.user?.bio || (isSelf ? '这个人很懒，什么都没写～' : '') }}</div>
+            <div class="profile-name">{{ spaceUser?.nickname ?? '用户空间' }}</div>
+            <div class="profile-bio">{{ spaceUser?.bio || (isSelf ? '这个人很懒，什么都没写～' : '') }}</div>
           </div>
         </div>
       </div>
