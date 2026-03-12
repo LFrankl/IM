@@ -96,13 +96,15 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	var body struct {
 		Nickname string `json:"nickname"`
 		Bio      string `json:"bio"`
+		Region   string `json:"region"`
+		Birthday string `json:"birthday"`
 	}
 	if err := c.ShouldBindJSON(&body); err != nil {
 		response.BadRequest(c, "参数错误")
 		return
 	}
 	userID := middleware.GetUserID(c)
-	user, err := h.userSvc.UpdateProfile(userID, body.Nickname, body.Bio)
+	user, err := h.userSvc.UpdateProfile(userID, body.Nickname, body.Bio, body.Region, body.Birthday)
 	if err != nil {
 		response.BadRequest(c, err.Error())
 		return

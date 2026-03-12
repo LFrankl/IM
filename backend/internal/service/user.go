@@ -54,7 +54,7 @@ func (s *UserService) UpdateCover(userID int64, coverURL string) (*model.User, e
 	return user, nil
 }
 
-func (s *UserService) UpdateProfile(userID int64, nickname, bio string) (*model.User, error) {
+func (s *UserService) UpdateProfile(userID int64, nickname, bio, region, birthday string) (*model.User, error) {
 	if nickname == "" {
 		return nil, errors.New("昵称不能为空")
 	}
@@ -64,6 +64,8 @@ func (s *UserService) UpdateProfile(userID int64, nickname, bio string) (*model.
 	}
 	user.Nickname = nickname
 	user.Bio = bio
+	user.Region = region
+	user.Birthday = birthday
 	if err := s.userDAO.Update(user); err != nil {
 		return nil, err
 	}

@@ -7,6 +7,8 @@ export interface User {
   avatar: string
   cover: string
   bio: string
+  region: string
+  birthday: string // YYYY-MM-DD
   status: UserStatus
   created_at: string
 }

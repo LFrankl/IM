@@ -10,6 +10,8 @@ type User struct {
 	Avatar    string    `gorm:"default:''" json:"avatar"`
 	Cover     string    `gorm:"default:''" json:"cover"`
 	Bio       string    `gorm:"default:''" json:"bio"`
+	Region    string    `gorm:"default:''" json:"region"`
+	Birthday  string    `gorm:"default:''" json:"birthday"` // YYYY-MM-DD
 	Status    string    `gorm:"default:'offline'" json:"status"` // online/offline/busy
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

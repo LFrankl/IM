@@ -13,6 +13,8 @@ const auth = useAuthStore()
 
 const nickname = ref(auth.user?.nickname ?? '')
 const bio = ref(auth.user?.bio ?? '')
+const region = ref(auth.user?.region ?? '')
+const birthday = ref(auth.user?.birthday ?? '')
 const saving = ref(false)
 const errorMsg = ref('')
 
@@ -53,8 +55,8 @@ async function save() {
       const body = res.data as unknown as ApiResponse<User>
       auth.updateUser(body.data)
     }
-    // 更新昵称/签名
-    const res = await userApi.updateProfile(nickname.value.trim(), bio.value.trim())
+    // 更新昵称/签名/地区/生日
+    const res = await userApi.updateProfile(nickname.value.trim(), bio.value.trim(), region.value.trim(), birthday.value)
     const body = res.data as unknown as ApiResponse<User>
     auth.updateUser(body.data)
     emit('close')
@@ -71,7 +73,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <Modal title="编辑资料" :width="340" @close="emit('close')">
+  <Modal title="编辑资料" :width="400" max-height="92vh" @close="emit('close')">
     <div class="profile-modal">
       <!-- 头像区 -->
       <div class="avatar-section">
@@ -102,6 +104,16 @@ onUnmounted(() => {
       <div class="form-group">
         <label>个性签名</label>
         <input v-model="bio" class="form-input" placeholder="介绍一下自己…" maxlength="100" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>地区</label>
+          <input v-model="region" class="form-input" placeholder="城市" maxlength="30" />
+        </div>
+        <div class="form-group">
+          <label>生日</label>
+          <input v-model="birthday" class="form-input" type="text" placeholder="YYYY-MM-DD" maxlength="10" />
+        </div>
       </div>
 
       <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
@@ -155,6 +167,16 @@ onUnmounted(() => {
 .avatar-overlay span {
   color: white;
   font-size: 13px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+  min-width: 0;
 }
 
 .form-group {

@@ -123,15 +123,15 @@ function goToSpace() {
             </div>
           </div>
 
-          <!-- 待定信息区 -->
+          <!-- 信息区 -->
           <div class="card-meta">
             <div class="meta-item">
               <span class="meta-label">地区</span>
-              <span class="meta-value">—</span>
+              <span class="meta-value">{{ user.region || '—' }}</span>
             </div>
             <div class="meta-item">
               <span class="meta-label">生日</span>
-              <span class="meta-value">—</span>
+              <span class="meta-value">{{ user.birthday || '—' }}</span>
             </div>
             <div class="meta-item">
               <span class="meta-label">加入时间</span>
@@ -198,7 +198,7 @@ function goToSpace() {
 
 /* 封面 */
 .card-cover {
-  height: 100px;
+  height: 120px;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -234,13 +234,13 @@ function goToSpace() {
   font-size: 13px;
 }
 
-/* 头像悬出封面 */
+/* 头像悬出封面，文字在封面下方 */
 .card-profile {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 12px;
   padding: 0 20px 16px;
-  margin-top: -32px;
+  margin-top: -40px;
   flex-shrink: 0;
 }
 
@@ -251,6 +251,7 @@ function goToSpace() {
 }
 
 .card-info {
+  padding-top: 44px;
   padding-bottom: 4px;
   min-width: 0;
 }

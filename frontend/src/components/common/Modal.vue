@@ -1,12 +1,12 @@
 <script setup lang="ts">
-defineProps<{ title?: string; width?: number }>()
+defineProps<{ title?: string; width?: number; maxHeight?: string }>()
 const emit = defineEmits<{ close: [] }>()
 </script>
 
 <template>
   <Teleport to="body">
     <div class="modal-mask" @click.self="emit('close')">
-      <div class="modal-box" :style="{ width: width ? `${width}px` : '480px' }">
+      <div class="modal-box" :style="{ width: width ? `${width}px` : '480px', maxHeight: maxHeight || '80vh' }">
         <div v-if="title" class="modal-header">
           <span class="modal-title">{{ title }}</span>
           <button class="modal-close" @click="emit('close')">✕</button>
@@ -35,7 +35,6 @@ const emit = defineEmits<{ close: [] }>()
   border-radius: var(--radius-modal);
   box-shadow: var(--shadow-modal);
   overflow: hidden;
-  max-height: 80vh;
   display: flex;
   flex-direction: column;
 }

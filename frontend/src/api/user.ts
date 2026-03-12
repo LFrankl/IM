@@ -22,7 +22,7 @@ export const userApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
-  updateProfile(nickname: string, bio: string) {
-    return client.put<User>('/api/users/me', { nickname, bio })
+  updateProfile(nickname: string, bio: string, region: string, birthday: string) {
+    return client.put<User>('/api/users/me', { nickname, bio, region, birthday })
   },
 }
