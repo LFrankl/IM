@@ -450,6 +450,7 @@ function sendMessage(f: Friendship) {
 /* 右侧内容区 */
 .content-area {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -542,6 +543,7 @@ function sendMessage(f: Friendship) {
   flex-direction: column;
   align-items: center;
   padding: 48px 24px 24px;
+  overflow-y: auto;
 }
 
 .profile-avatar-area { margin-bottom: 16px; }
