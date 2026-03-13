@@ -71,8 +71,18 @@ const menuX = ref(0)
 const menuY = ref(0)
 const recallError = ref('')
 
+const isGroupOwner = computed(() => {
+  if (props.msg.chat_type !== 'group') return false
+  const g = group.myGroups.find((g) => g.id === Number(props.msg.to_id))
+  return g?.owner_id === auth.user?.id
+})
+
 const canRecall = computed(() => {
-  if (!isSelf.value || props.msg.is_recalled) return false
+  if (props.msg.is_recalled) return false
+  // 群主可以撤回任何消息，不受时间限制
+  if (isGroupOwner.value) return true
+  // 普通成员只能撤回自己的消息且在2分钟内
+  if (!isSelf.value) return false
   return Date.now() - new Date(props.msg.created_at).getTime() < 2 * 60 * 1000
 })
 
@@ -179,7 +189,7 @@ async function doRecall() {
     <div v-if="menuVisible" class="ctx-overlay" @click="closeMenu" @contextmenu.prevent="closeMenu">
       <div class="ctx-menu" :style="{ left: menuX + 'px', top: menuY + 'px' }" @click.stop>
         <div class="ctx-item ctx-item-disabled">转发</div>
-        <div v-if="isSelf && !msg.is_recalled" class="ctx-item" :class="{ 'ctx-item-disabled': !canRecall }"
+        <div v-if="(isSelf || isGroupOwner) && !msg.is_recalled" class="ctx-item" :class="{ 'ctx-item-disabled': !canRecall }"
              @click="canRecall ? doRecall() : null">
           撤回{{ canRecall ? '' : '（已超时）' }}
         </div>

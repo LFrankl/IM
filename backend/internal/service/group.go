@@ -307,15 +307,18 @@ func (s *GroupService) RecallGroupMessage(userID, msgID int64) error {
 	if msg.ChatType != "group" {
 		return ErrRecallForbidden
 	}
-	if time.Since(msg.CreatedAt) > recallWindow {
-		return ErrRecallTimeout
-	}
-	// 只有消息发送者或群主可以撤回
+	// 判断是否群主（群主不受时间限制）
+	isOwner := false
 	if msg.FromID != userID {
 		g, err := s.groupDAO.GetByID(msg.ToID)
 		if err != nil || g == nil || g.OwnerID != userID {
 			return ErrRecallForbidden
 		}
+		isOwner = true
+	}
+	// 普通成员只能在时间窗口内撤回自己的消息
+	if !isOwner && time.Since(msg.CreatedAt) > recallWindow {
+		return ErrRecallTimeout
 	}
 	if err := s.msgDAO.Recall(msgID); err != nil {
 		return err
