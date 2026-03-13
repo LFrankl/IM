@@ -417,6 +417,7 @@ function goToSpace(userId: number) {
 
 .profile-avatar {
   border: 4px solid white;
+  border-radius: calc(var(--radius-avatar) + 4px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   flex-shrink: 0;
   position: relative;
