@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useContactsStore } from '@/stores/contacts'
+import { useAuthStore } from '@/stores/auth'
 import ChatWindow from '@/components/chat/ChatWindow.vue'
 import Avatar from '@/components/common/Avatar.vue'
 import type { Conversation } from '@/types/chat'
 
 const chat = useChatStore()
 const contacts = useContactsStore()
+const auth = useAuthStore()
 
 const convs = computed(() => chat.conversations)
 
@@ -54,6 +56,9 @@ function selectConv(convId: string) {
 function lastMsgPreview(conv: (typeof convs.value)[number]): string {
   const msg = conv.last_message
   if (!msg) return ''
+  if (msg.is_recalled) {
+    return msg.from_id === auth.user?.id ? '你撤回了一条消息' : `${msg.from?.nickname ?? '对方'} 撤回了一条消息`
+  }
   if (msg.msg_type === 'text') {
     const c = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content
     return (c as { text: string }).text

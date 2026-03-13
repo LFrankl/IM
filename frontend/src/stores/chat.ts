@@ -117,6 +117,11 @@ export const useChatStore = defineStore('chat', () => {
         m.id === msgId ? { ...m, is_recalled: true } : m
       )
     }
+    conversations.value = conversations.value.map((c) =>
+      c.last_message?.id === msgId
+        ? { ...c, last_message: { ...c.last_message!, is_recalled: true } }
+        : c
+    )
   }
 
   return {

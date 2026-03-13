@@ -107,6 +107,11 @@ export const useGroupStore = defineStore('group', () => {
         m.id === msgId ? { ...m, is_recalled: true } : m
       )
     }
+    myGroups.value = myGroups.value.map((g) =>
+      g.last_message?.id === msgId
+        ? { ...g, last_message: { ...g.last_message!, is_recalled: true } }
+        : g
+    )
   }
 
   function removeGroup(id: number) {

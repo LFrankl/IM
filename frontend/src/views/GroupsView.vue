@@ -77,6 +77,9 @@ async function disbandGroup(g: GroupWithMeta) {
 function lastMsgPreview(g: GroupWithMeta): string {
   const msg = g.last_message
   if (!msg) return ''
+  if (msg.is_recalled) {
+    return msg.from_id === auth.user?.id ? '你撤回了一条消息' : `${msg.from?.nickname ?? '对方'} 撤回了一条消息`
+  }
   if (msg.msg_type === 'text') {
     try {
       const c = typeof msg.content === 'string' ? JSON.parse(msg.content) : msg.content

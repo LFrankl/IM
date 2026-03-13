@@ -114,7 +114,13 @@ async function doRecall() {
 </script>
 
 <template>
-  <div class="msg-row" :class="{ self: isSelf }">
+  <!-- 撤回通知：居中一行，隐藏头像和气泡 -->
+  <div v-if="msg.is_recalled" class="msg-recalled-notice">
+    {{ isSelf ? '你撤回了一条消息' : `${msg.from?.nickname ?? '对方'} 撤回了一条消息` }}
+  </div>
+
+  <!-- 正常消息行 -->
+  <div v-else class="msg-row" :class="{ self: isSelf }">
     <!-- 对方头像 -->
     <Avatar
       v-if="!isSelf"
@@ -132,12 +138,9 @@ async function doRecall() {
       </div>
 
       <div class="bubble-wrap">
-        <div class="bubble" :class="{ 'bubble-self': isSelf, 'bubble-other': !isSelf, 'bubble-recalled': msg.is_recalled }"
+        <div class="bubble" :class="{ 'bubble-self': isSelf, 'bubble-other': !isSelf }"
              @contextmenu="onContextMenu">
-          <template v-if="msg.is_recalled">
-            <span class="recalled-text">消息已撤回</span>
-          </template>
-          <template v-else-if="msg.msg_type === 'text'">
+          <template v-if="msg.msg_type === 'text'">
             <span class="selectable">{{ textContent }}</span>
           </template>
           <template v-else-if="msg.msg_type === 'image'">
@@ -336,17 +339,13 @@ async function doRecall() {
 }
 .img-preview-close:hover { background: rgba(255, 255, 255, 0.28); }
 
-/* ── 撤回状态 ── */
-.bubble-recalled {
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 4px 0 !important;
-}
-
-.recalled-text {
+/* ── 撤回通知行 ── */
+.msg-recalled-notice {
+  text-align: center;
   font-size: 12px;
   color: var(--text-tertiary);
-  font-style: italic;
+  margin: 2px 0 14px;
+  user-select: none;
 }
 
 .recall-error {
