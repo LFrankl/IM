@@ -15,6 +15,7 @@ const nickname = ref(auth.user?.nickname ?? '')
 const bio = ref(auth.user?.bio ?? '')
 const region = ref(auth.user?.region ?? '')
 const birthday = ref(auth.user?.birthday ?? '')
+const today = new Date().toISOString().split('T')[0]
 const saving = ref(false)
 const errorMsg = ref('')
 
@@ -112,7 +113,7 @@ onUnmounted(() => {
         </div>
         <div class="form-group">
           <label>生日</label>
-          <input v-model="birthday" class="form-input" type="text" placeholder="YYYY-MM-DD" maxlength="10" />
+          <input v-model="birthday" class="form-input date-input" type="date" :max="today" min="1900-01-01" />
         </div>
       </div>
 
@@ -207,6 +208,20 @@ onUnmounted(() => {
 
 .form-input:focus {
   border-bottom-color: var(--qq-blue-primary);
+}
+
+.date-input {
+  cursor: pointer;
+  color-scheme: light;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 0.4;
+  cursor: pointer;
+  margin-right: -2px;
+}
+.date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.75;
 }
 
 .error-msg {
