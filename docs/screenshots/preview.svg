@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" width="900" height="560">
+  <defs>
+    <!-- Avatar gradients -->
+    <linearGradient id="av-blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1677FF"/><stop offset="100%" stop-color="#4ABCFA"/>
+    </linearGradient>
+    <linearGradient id="av-green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#52C41A"/><stop offset="100%" stop-color="#13C2C2"/>
+    </linearGradient>
+    <linearGradient id="av-pink" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FA8C16"/><stop offset="100%" stop-color="#EB2F96"/>
+    </linearGradient>
+    <linearGradient id="av-purple" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#722ED1"/><stop offset="100%" stop-color="#1677FF"/>
+    </linearGradient>
+    <linearGradient id="av-teal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13C2C2"/><stop offset="100%" stop-color="#52C41A"/>
+    </linearGradient>
+    <!-- Window drop shadow -->
+    <filter id="win-sh" x="-6%" y="-6%" width="112%" height="118%">
+      <feDropShadow dx="0" dy="12" stdDeviation="28" flood-color="#1e3a70" flood-opacity="0.18"/>
+    </filter>
+    <!-- Bubble drop shadow -->
+    <filter id="bub-sh" x="-8%" y="-20%" width="120%" height="150%">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#000" flood-opacity="0.07"/>
+    </filter>
+    <!-- Clip to window rounded rect -->
+    <clipPath id="win-clip">
+      <rect x="0" y="0" width="900" height="560" rx="13"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Window shell ── -->
+  <rect x="0" y="0" width="900" height="560" rx="13" fill="#e8e8e8" filter="url(#win-sh)"/>
+
+  <g clip-path="url(#win-clip)">
+
+    <!-- ════════════════ TITLEBAR ════════════════ -->
+    <rect x="0" y="0" width="900" height="34" fill="#1E2028"/>
+    <circle cx="20" cy="17" r="6" fill="#FF5F57"/>
+    <circle cx="36" cy="17" r="6" fill="#FEBC2E"/>
+    <circle cx="52" cy="17" r="6" fill="#28C840"/>
+    <text x="450" y="22" text-anchor="middle" font-size="11"
+          fill="rgba(255,255,255,0.28)"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">IM · 即时通讯</text>
+
+    <!-- ════════════════ NAV SIDEBAR (68px) ════════════════ -->
+    <rect x="0" y="34" width="68" height="526" fill="#2C2C2C"/>
+
+    <!-- Self avatar -->
+    <rect x="16" y="52" width="36" height="36" rx="8" fill="url(#av-blue)"/>
+    <!-- Online dot -->
+    <circle cx="52" cy="85" r="5" fill="#52C41A" stroke="#2C2C2C" stroke-width="2"/>
+
+    <!-- Separator -->
+    <line x1="12" y1="103" x2="56" y2="103" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+    <!-- Chat icon (active) -->
+    <rect x="0"  y="112" width="4"  height="40" fill="#1677FF" rx="2"/>
+    <rect x="14" y="112" width="40" height="40" rx="9" fill="rgba(255,255,255,0.13)"/>
+    <!-- Chat bubble shape -->
+    <rect x="23" y="120" width="22" height="15" rx="4" fill="rgba(255,255,255,0.85)"/>
+    <polygon points="25,135 22,142 30,135" fill="rgba(255,255,255,0.85)"/>
+
+    <!-- Groups icon -->
+    <rect x="14" y="160" width="40" height="40" rx="9" fill="transparent"/>
+    <circle cx="30" cy="180" r="6.5" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.6"/>
+    <circle cx="38" cy="180" r="6.5" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.6"/>
+
+    <!-- Space icon -->
+    <rect x="14" y="208" width="40" height="40" rx="9" fill="transparent"/>
+    <polygon points="34,214 19,226 49,226" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.6"/>
+    <rect x="26" y="226" width="16" height="12" rx="2" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.6"/>
+
+    <!-- Photo icon -->
+    <rect x="14" y="256" width="40" height="40" rx="9" fill="transparent"/>
+    <rect x="21" y="263" width="26" height="20" rx="3" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+    <circle cx="26.5" cy="269" r="2.5" fill="rgba(255,255,255,0.38)"/>
+    <polyline points="21,283 29,273 35,280 40,274 47,283" fill="rgba(255,255,255,0.22)" stroke="rgba(255,255,255,0.38)" stroke-width="1"/>
+
+    <!-- Separator -->
+    <line x1="12" y1="510" x2="56" y2="510" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+    <!-- Settings icon -->
+    <circle cx="34" cy="530" r="8.5" fill="none" stroke="rgba(255,255,255,0.38)" stroke-width="1.5"/>
+    <circle cx="34" cy="530" r="3"   fill="rgba(255,255,255,0.38)"/>
+
+    <!-- ════════════════ LIST PANEL (260px) ════════════════ -->
+    <rect x="68" y="34" width="260" height="526" fill="#F5F5F5"/>
+
+    <!-- Header -->
+    <text x="84" y="68" font-size="14" font-weight="600" fill="#1A1A1A"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">消息</text>
+    <!-- Compose icon (pencil in box) -->
+    <rect x="293" y="53" width="24" height="22" rx="5" fill="rgba(0,0,0,0.05)"/>
+    <line x1="298" y1="71" x2="311" y2="58" stroke="#999" stroke-width="1.4"/>
+    <line x1="298" y1="71" x2="302" y2="71" stroke="#999" stroke-width="1.4"/>
+    <line x1="309" y1="56" x2="313" y2="60" stroke="#999" stroke-width="1.4"/>
+    <line x1="298" y1="82" x2="328" y2="82" stroke="#E8E8E8" stroke-width="1"/>
+
+    <!-- Search bar -->
+    <rect x="78" y="90" width="240" height="28" rx="14" fill="#EBEBEB"/>
+    <!-- Magnifier icon -->
+    <circle cx="98" cy="104" r="6" fill="none" stroke="#AAAAAA" stroke-width="1.5"/>
+    <line x1="102.5" y1="108.5" x2="106" y2="112" stroke="#AAAAAA" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="202" y="109" text-anchor="middle" font-size="12" fill="#BBBBBB"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">搜索</text>
+
+    <!-- ── Conv Item 1 (active) ── -->
+    <rect x="68" y="126" width="260" height="62" fill="rgba(22,119,255,0.08)"/>
+    <rect x="68" y="126" width="3"   height="62" fill="#1677FF" rx="1.5"/>
+    <rect x="84" y="138" width="36" height="36" rx="8" fill="url(#av-blue)"/>
+    <text x="128" y="155" font-size="12" font-weight="600" fill="#1A1A1A"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小明</text>
+    <text x="316" y="151" text-anchor="end" font-size="10" fill="#CCCCCC"
+          font-family="system-ui">刚刚</text>
+    <text x="128" y="172" font-size="11" fill="#AAAAAA"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">好的，明天见！👋</text>
+
+    <!-- ── Conv Item 2 ── -->
+    <line x1="126" y1="188" x2="328" y2="188" stroke="#E8E8E8" stroke-width="0.6"/>
+    <rect x="84" y="200" width="36" height="36" rx="8" fill="url(#av-green)"/>
+    <text x="128" y="217" font-size="12" font-weight="600" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">Vue 技术群</text>
+    <text x="316" y="213" text-anchor="end" font-size="10" fill="#CCCCCC" font-family="system-ui">昨天</text>
+    <text x="128" y="234" font-size="11" fill="#AAAAAA"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小红：这个问题解决了！</text>
+    <rect x="298" y="202" width="20" height="16" rx="8" fill="#FF4D4F"/>
+    <text x="308" y="214" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="system-ui">3</text>
+
+    <!-- ── Conv Item 3 ── -->
+    <line x1="126" y1="250" x2="328" y2="250" stroke="#E8E8E8" stroke-width="0.6"/>
+    <rect x="84" y="262" width="36" height="36" rx="8" fill="url(#av-pink)"/>
+    <text x="128" y="279" font-size="12" font-weight="600" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小红</text>
+    <text x="316" y="275" text-anchor="end" font-size="10" fill="#CCCCCC" font-family="system-ui">周二</text>
+    <text x="128" y="296" font-size="11" fill="#AAAAAA"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">[图片]</text>
+
+    <!-- ── Conv Item 4 ── -->
+    <line x1="126" y1="312" x2="328" y2="312" stroke="#E8E8E8" stroke-width="0.6"/>
+    <rect x="84" y="324" width="36" height="36" rx="8" fill="url(#av-purple)"/>
+    <text x="128" y="341" font-size="12" font-weight="600" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">前端开发群</text>
+    <text x="316" y="337" text-anchor="end" font-size="10" fill="#CCCCCC" font-family="system-ui">周一</text>
+    <text x="128" y="358" font-size="11" fill="#AAAAAA"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小刚：部署完成 ✅</text>
+    <rect x="291" y="326" width="26" height="16" rx="8" fill="#FF4D4F"/>
+    <text x="304" y="338" text-anchor="middle" font-size="9" font-weight="700" fill="white" font-family="system-ui">12</text>
+
+    <!-- ── Conv Item 5 ── -->
+    <line x1="126" y1="374" x2="328" y2="374" stroke="#E8E8E8" stroke-width="0.6"/>
+    <rect x="84" y="386" width="36" height="36" rx="8" fill="url(#av-teal)"/>
+    <text x="128" y="403" font-size="12" font-weight="600" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小强</text>
+    <text x="316" y="399" text-anchor="end" font-size="10" fill="#CCCCCC" font-family="system-ui">周日</text>
+    <text x="128" y="420" font-size="11" fill="#AAAAAA"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">哈哈哈哈 😂</text>
+
+    <!-- ════════════════ PANEL DIVIDER ════════════════ -->
+    <line x1="328" y1="34" x2="328" y2="560" stroke="#DCDCDC" stroke-width="1"/>
+
+    <!-- ════════════════ CHAT AREA ════════════════ -->
+    <rect x="329" y="34" width="571" height="526" fill="#F7F7F7"/>
+
+    <!-- Chat header -->
+    <rect x="329" y="34" width="571" height="52" fill="white"/>
+    <text x="349" y="65" font-size="14" font-weight="600" fill="#1A1A1A"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小明</text>
+    <!-- Online indicator -->
+    <circle cx="366" cy="72" r="3.5" fill="#52C41A"/>
+    <text x="878" y="65" text-anchor="end" font-size="13" fill="#CCCCCC" font-family="system-ui">···</text>
+    <line x1="329" y1="86" x2="900" y2="86" stroke="#EEEEEE" stroke-width="1"/>
+
+    <!-- Timestamp -->
+    <text x="614" y="110" text-anchor="middle" font-size="10" fill="#C0C0C0"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">今天 14:22</text>
+
+    <!-- ── Message 1: other (left) ── -->
+    <rect x="349" y="120" width="32" height="32" rx="7" fill="url(#av-green)"/>
+    <!-- Name above bubble -->
+    <text x="389" y="119" font-size="10" fill="#BBBBBB"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">小明</text>
+    <rect x="389" y="122" width="192" height="36" rx="10" fill="white" filter="url(#bub-sh)"/>
+    <text x="405" y="144" font-size="12" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">明天下午有空吗？讨论项目</text>
+
+    <!-- ── Message 2: self (right) ── -->
+    <rect x="851" y="176" width="32" height="32" rx="7" fill="url(#av-blue)"/>
+    <rect x="671" y="178" width="172" height="36" rx="10" fill="#C6E2FF"/>
+    <text x="687" y="200" font-size="12" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">有的，三点怎么样？</text>
+    <text x="849" y="218" text-anchor="end" font-size="10" fill="#C0C0C0"
+          font-family="system-ui">已读</text>
+
+    <!-- ── Message 3: other (left) ── -->
+    <rect x="349" y="232" width="32" height="32" rx="7" fill="url(#av-green)"/>
+    <rect x="389" y="234" width="198" height="36" rx="10" fill="white" filter="url(#bub-sh)"/>
+    <text x="405" y="256" font-size="12" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">好的！把方案发给你 📄</text>
+
+    <!-- ── Message 4: self (right) ── -->
+    <rect x="851" y="288" width="32" height="32" rx="7" fill="url(#av-blue)"/>
+    <rect x="707" y="290" width="136" height="36" rx="10" fill="#C6E2FF"/>
+    <text x="723" y="312" font-size="12" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">好的，明天见！👋</text>
+
+    <!-- ── Recalled message notice ── -->
+    <text x="614" y="358" text-anchor="middle" font-size="11" fill="#CCCCCC"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">你撤回了一条消息</text>
+
+    <!-- Timestamp 2 -->
+    <text x="614" y="386" text-anchor="middle" font-size="10" fill="#C0C0C0"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">14:35</text>
+
+    <!-- ── Message 5: other (left) ── -->
+    <rect x="349" y="396" width="32" height="32" rx="7" fill="url(#av-green)"/>
+    <rect x="389" y="398" width="174" height="36" rx="10" fill="white" filter="url(#bub-sh)"/>
+    <text x="405" y="420" font-size="12" fill="#333"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">明天要带投影仪吗？</text>
+
+    <!-- ════════════════ TOOLBAR ════════════════ -->
+    <rect x="329" y="444" width="571" height="38" fill="white"/>
+    <line x1="329" y1="444" x2="900" y2="444" stroke="#EEEEEE" stroke-width="1"/>
+
+    <!-- Emoji icon: smiley face -->
+    <circle cx="358" cy="463" r="9" fill="none" stroke="#AAAAAA" stroke-width="1.5"/>
+    <circle cx="354.5" cy="460.5" r="1.4" fill="#AAAAAA"/>
+    <circle cx="361.5" cy="460.5" r="1.4" fill="#AAAAAA"/>
+    <path d="M354,465.5 Q358,469.5 362,465.5" fill="none" stroke="#AAAAAA" stroke-width="1.4" stroke-linecap="round"/>
+
+    <!-- Image icon -->
+    <rect x="382" y="454" width="19" height="18" rx="3" fill="none" stroke="#AAAAAA" stroke-width="1.5"/>
+    <circle cx="387" cy="459" r="2" fill="#AAAAAA"/>
+    <polyline points="382,472 388,464 393,469 396,465 401,472" fill="none" stroke="#AAAAAA" stroke-width="1.2"/>
+
+    <!-- File/attachment icon -->
+    <line x1="414" y1="463" x2="422" y2="455" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round"/>
+    <line x1="416" y1="461" x2="424" y2="469" stroke="#AAAAAA" stroke-width="2" stroke-linecap="round"/>
+    <line x1="418" y1="471" x2="426" y2="455" stroke="#AAAAAA" stroke-width="1.4" stroke-linecap="round"/>
+
+    <!-- Screenshot icon: crop square with corner marks -->
+    <rect x="441" y="454" width="18" height="18" rx="2" fill="none" stroke="#AAAAAA" stroke-width="1.4"/>
+    <line x1="441" y1="459" x2="444" y2="459" stroke="#AAAAAA" stroke-width="1.4"/>
+    <line x1="441" y1="467" x2="444" y2="467" stroke="#AAAAAA" stroke-width="1.4"/>
+
+    <!-- ════════════════ INPUT AREA ════════════════ -->
+    <rect x="329" y="482" width="571" height="78" fill="white"/>
+    <line x1="329" y1="482" x2="900" y2="482" stroke="#F0F0F0" stroke-width="1"/>
+
+    <!-- Cursor blink (static) -->
+    <rect x="349" y="496" width="2" height="17" rx="1" fill="#1677FF" opacity="0.85"/>
+
+    <!-- Send button -->
+    <rect x="826" y="512" width="58" height="30" rx="8" fill="#1677FF"/>
+    <text x="855" y="531" text-anchor="middle" font-size="12" font-weight="600" fill="white"
+          font-family="system-ui,-apple-system,'PingFang SC',sans-serif">发送</text>
+
+    <!-- Shortcut hint -->
+    <text x="822" y="526" text-anchor="end" font-size="10" fill="#CCCCCC"
+          font-family="system-ui,-apple-system,sans-serif">Enter 发送</text>
+
+  </g>
+</svg>

@@ -9,22 +9,24 @@
 
     :root {
       --blue: #1677FF;
-      --blue-light: #E6F4FF;
+      --blue-light: #E8F3FF;
       --blue-dark: #0958D9;
       --green: #52C41A;
       --red: #FF4D4F;
       --purple: #722ED1;
-      --gold: #FAAD14;
+      --gold: #F0A030;
+      --sky: #D6EAFF;
 
-      --bg: #0A0C10;
-      --bg-card: #111318;
-      --bg-card2: #16191F;
-      --border: rgba(255,255,255,0.07);
-      --border-bright: rgba(255,255,255,0.12);
+      --bg: #F4F8FF;
+      --bg-warm: #FFF9F0;
+      --bg-card: #FFFFFF;
+      --bg-card2: #F0F5FF;
+      --border: rgba(22,60,120,0.08);
+      --border-bright: rgba(22,60,120,0.14);
 
-      --text-1: #F0F2F5;
-      --text-2: #8B909A;
-      --text-3: #555B67;
+      --text-1: #1A2340;
+      --text-2: #5A6B8A;
+      --text-3: #9AABC0;
     }
 
     html { scroll-behavior: smooth; }
@@ -35,16 +37,6 @@
       font-family: "PingFang SC", "Microsoft YaHei UI", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
-    }
-
-    /* ── Noise texture overlay ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
     }
 
     /* ══════════════════════════════
@@ -58,8 +50,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 0 48px;
-      background: rgba(10, 12, 16, 0.7);
-      backdrop-filter: blur(16px);
+      background: rgba(244, 248, 255, 0.85);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
       z-index: 100;
     }
@@ -78,12 +70,13 @@
     .nav-logo-icon {
       width: 32px;
       height: 32px;
-      background: linear-gradient(135deg, #1677FF 0%, #722ED1 100%);
-      border-radius: 8px;
+      background: linear-gradient(135deg, #1677FF 0%, #4ABCFA 100%);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
+      box-shadow: 0 4px 12px rgba(22,119,255,0.28);
     }
 
     .nav-links {
@@ -100,14 +93,15 @@
     .nav-links a:hover { color: var(--text-1); }
 
     .nav-cta {
-      background: var(--blue);
+      background: var(--blue) !important;
       color: white !important;
       padding: 7px 18px;
-      border-radius: 7px;
+      border-radius: 8px;
       font-weight: 500;
-      transition: opacity 0.2s !important;
+      transition: all 0.2s !important;
+      box-shadow: 0 2px 10px rgba(22,119,255,0.28);
     }
-    .nav-cta:hover { opacity: 0.85 !important; color: white !important; }
+    .nav-cta:hover { background: #4096FF !important; transform: translateY(-1px); }
 
     /* ══════════════════════════════
        HERO
@@ -124,31 +118,30 @@
       overflow: hidden;
     }
 
-    /* Background glow orbs */
-    .hero::after {
+    /* Sunny sky gradient background */
+    .hero::before {
       content: '';
       position: absolute;
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 900px;
-      height: 600px;
-      background: radial-gradient(ellipse at center,
-        rgba(22,119,255,0.18) 0%,
-        rgba(114,46,209,0.10) 40%,
-        transparent 70%);
+      inset: 0;
+      background:
+        radial-gradient(ellipse 900px 600px at 30% 20%, rgba(22,119,255,0.10) 0%, transparent 70%),
+        radial-gradient(ellipse 700px 500px at 75% 15%, rgba(74,188,250,0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 600px 400px at 60% 80%, rgba(240,160,48,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #EAF4FF 0%, #F4F8FF 50%, #FFF8EE 100%);
       pointer-events: none;
     }
 
     .hero-badge {
+      position: relative;
+      z-index: 1;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(22,119,255,0.12);
-      border: 1px solid rgba(22,119,255,0.3);
-      color: #69B1FF;
+      background: rgba(22,119,255,0.08);
+      border: 1px solid rgba(22,119,255,0.2);
+      color: #1677FF;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       padding: 5px 14px;
       border-radius: 100px;
       margin-bottom: 28px;
@@ -165,11 +158,11 @@
 
     @keyframes pulse-dot {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.7); }
+      50% { opacity: 0.4; transform: scale(0.7); }
     }
 
     .hero-title {
-      font-size: clamp(40px, 7vw, 80px);
+      font-size: clamp(40px, 7vw, 78px);
       font-weight: 800;
       line-height: 1.08;
       letter-spacing: -2px;
@@ -178,15 +171,12 @@
       z-index: 1;
     }
 
-    .hero-title-gradient {
-      background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.5) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+    .hero-title-dark {
+      color: var(--text-1);
     }
 
     .hero-title-blue {
-      background: linear-gradient(135deg, #1677FF 0%, #9254DE 100%);
+      background: linear-gradient(135deg, #1677FF 0%, #4ABCFA 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -195,8 +185,8 @@
     .hero-desc {
       font-size: 18px;
       color: var(--text-2);
-      line-height: 1.7;
-      max-width: 540px;
+      line-height: 1.75;
+      max-width: 520px;
       margin: 0 auto 44px;
       position: relative;
       z-index: 1;
@@ -215,7 +205,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #1677FF;
+      background: linear-gradient(135deg, #1677FF, #4ABCFA);
       color: white;
       text-decoration: none;
       font-size: 15px;
@@ -223,19 +213,18 @@
       padding: 12px 28px;
       border-radius: 10px;
       transition: all 0.2s;
-      box-shadow: 0 0 32px rgba(22,119,255,0.35);
+      box-shadow: 0 6px 24px rgba(22,119,255,0.30);
     }
     .btn-primary:hover {
-      background: #4096FF;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 40px rgba(22,119,255,0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 32px rgba(22,119,255,0.40);
     }
 
     .btn-secondary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255,255,255,0.06);
+      background: white;
       color: var(--text-1);
       text-decoration: none;
       font-size: 15px;
@@ -244,10 +233,12 @@
       border-radius: 10px;
       border: 1px solid var(--border-bright);
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
     .btn-secondary:hover {
-      background: rgba(255,255,255,0.1);
-      transform: translateY(-1px);
+      background: var(--bg-card2);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.10);
     }
 
     /* ── UI Preview ── */
@@ -261,24 +252,24 @@
 
     .preview-glow {
       position: absolute;
-      bottom: -60px;
+      bottom: -50px;
       left: 50%;
       transform: translateX(-50%);
-      width: 80%;
-      height: 100px;
-      background: radial-gradient(ellipse, rgba(22,119,255,0.25) 0%, transparent 70%);
-      filter: blur(20px);
+      width: 75%;
+      height: 80px;
+      background: radial-gradient(ellipse, rgba(22,119,255,0.18) 0%, transparent 70%);
+      filter: blur(24px);
     }
 
     .preview-frame {
-      background: var(--bg-card);
-      border: 1px solid var(--border-bright);
-      border-radius: 16px;
+      background: #1A1D24;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
       overflow: hidden;
       box-shadow:
-        0 0 0 1px rgba(255,255,255,0.04),
-        0 40px 100px rgba(0,0,0,0.7),
-        0 20px 40px rgba(0,0,0,0.5);
+        0 0 0 1px rgba(0,0,0,0.04),
+        0 40px 100px rgba(22,60,120,0.22),
+        0 10px 30px rgba(0,0,0,0.12);
     }
 
     .preview-titlebar {
@@ -288,7 +279,7 @@
       align-items: center;
       padding: 0 16px;
       gap: 8px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
     .titlebar-dot {
@@ -318,7 +309,7 @@
       width: 36px;
       height: 36px;
       border-radius: 8px;
-      background: linear-gradient(135deg, #1677FF, #722ED1);
+      background: linear-gradient(135deg, #1677FF, #4ABCFA);
       margin-bottom: 10px;
     }
 
@@ -331,8 +322,6 @@
       justify-content: center;
       font-size: 18px;
       opacity: 0.45;
-      cursor: pointer;
-      transition: all 0.15s;
     }
     .pnav-icon.active {
       background: rgba(255,255,255,0.1);
@@ -381,10 +370,8 @@
       align-items: center;
       gap: 10px;
       padding: 9px 14px;
-      transition: background 0.1s;
     }
     .plist-item.active { background: rgba(22,119,255,0.15); }
-    .plist-item:not(.active):hover { background: rgba(255,255,255,0.04); }
 
     .pitem-avatar {
       width: 36px;
@@ -542,11 +529,10 @@
     }
 
     /* ══════════════════════════════
-       FEATURES SECTION
+       SECTION SHARED
     ══════════════════════════════ */
     section {
       position: relative;
-      z-index: 1;
     }
 
     .section-label {
@@ -554,11 +540,14 @@
       align-items: center;
       gap: 6px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       color: #1677FF;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 14px;
+      background: rgba(22,119,255,0.07);
+      padding: 4px 12px;
+      border-radius: 100px;
     }
 
     .section-title {
@@ -577,7 +566,49 @@
       max-width: 520px;
     }
 
-    /* Features grid */
+    /* ══════════════════════════════
+       STATS BAR
+    ══════════════════════════════ */
+    .stats-bar {
+      padding: 56px 48px;
+      background: white;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #1677FF 0%, #4ABCFA 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    /* ══════════════════════════════
+       FEATURES
+    ══════════════════════════════ */
     .features {
       padding: 120px 48px;
       max-width: 1200px;
@@ -597,37 +628,48 @@
     }
 
     .feature-card {
-      background: var(--bg-card);
+      background: white;
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
+      border-radius: 18px;
+      padding: 30px;
       transition: all 0.3s;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 2px 12px rgba(22,60,120,0.05);
     }
 
-    .feature-card::before {
+    .feature-card::after {
       content: '';
       position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.015) 100%);
-      pointer-events: none;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 18px 18px 0 0;
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .feature-card:hover {
-      border-color: var(--border-bright);
-      transform: translateY(-3px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      border-color: rgba(22,119,255,0.2);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(22,60,120,0.12);
     }
+    .feature-card:hover::after { opacity: 1; }
+
+    .feature-card:nth-child(1)::after { background: linear-gradient(90deg, #1677FF, #4ABCFA); }
+    .feature-card:nth-child(2)::after { background: linear-gradient(90deg, #52C41A, #13C2C2); }
+    .feature-card:nth-child(3)::after { background: linear-gradient(90deg, #EB2F96, #FF7875); }
+    .feature-card:nth-child(4)::after { background: linear-gradient(90deg, #FA8C16, #F0A030); }
+    .feature-card:nth-child(5)::after { background: linear-gradient(90deg, #722ED1, #9254DE); }
+    .feature-card:nth-child(6)::after { background: linear-gradient(90deg, #13C2C2, #36CFC9); }
 
     .feature-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
+      font-size: 23px;
       margin-bottom: 18px;
     }
 
@@ -641,15 +683,116 @@
     .feature-desc {
       font-size: 13px;
       color: var(--text-2);
-      line-height: 1.7;
+      line-height: 1.75;
     }
 
     /* ══════════════════════════════
-       TECH STACK SECTION
+       HIGHLIGHTS
+    ══════════════════════════════ */
+    .highlights {
+      padding: 80px 48px 120px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .highlight-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      margin-bottom: 100px;
+    }
+    .highlight-row:last-child { margin-bottom: 0; }
+    .highlight-row.reverse { direction: rtl; }
+    .highlight-row.reverse > * { direction: ltr; }
+
+    .highlight-visual {
+      background: #1A1D24;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      box-shadow:
+        0 24px 64px rgba(22,60,120,0.20),
+        0 4px 12px rgba(0,0,0,0.10);
+    }
+
+    .hv-header {
+      height: 40px;
+      background: #1A1D24;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 7px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .hv-body {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hl-meta {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1677FF;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      background: rgba(22,119,255,0.08);
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .hl-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      color: var(--text-1);
+      margin-bottom: 16px;
+    }
+
+    .hl-desc {
+      font-size: 15px;
+      color: var(--text-2);
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    .hl-points {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hl-point {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .hl-point-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       TECH STACK
     ══════════════════════════════ */
     .stack {
       padding: 100px 48px;
-      background: linear-gradient(180deg, transparent 0%, rgba(22,119,255,0.04) 50%, transparent 100%);
+      background: linear-gradient(180deg, #EFF6FF 0%, #F8F4FF 50%, #FFF8EE 100%);
     }
 
     .stack-inner {
@@ -672,7 +815,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      background: var(--bg-card);
+      background: white;
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 8px 16px;
@@ -680,35 +823,38 @@
       font-weight: 500;
       color: var(--text-1);
       transition: all 0.2s;
+      box-shadow: 0 1px 6px rgba(22,60,120,0.05);
     }
     .pill:hover {
-      border-color: var(--border-bright);
-      background: var(--bg-card2);
+      border-color: rgba(22,119,255,0.25);
+      box-shadow: 0 4px 16px rgba(22,119,255,0.12);
+      transform: translateY(-1px);
     }
 
     .pill-icon { font-size: 16px; }
 
     .pill-badge {
       font-size: 10px;
-      background: rgba(22,119,255,0.2);
-      color: #69B1FF;
+      background: rgba(22,119,255,0.10);
+      color: #1677FF;
       padding: 2px 7px;
       border-radius: 4px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     /* Architecture diagram */
     .arch-diagram {
-      background: var(--bg-card);
+      background: white;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 18px;
       padding: 28px;
       font-size: 12px;
+      box-shadow: 0 4px 24px rgba(22,60,120,0.07);
     }
 
     .arch-title {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-3);
       text-transform: uppercase;
       letter-spacing: 0.06em;
@@ -740,7 +886,7 @@
       padding: 5px 12px;
       border-radius: 7px;
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
     }
 
@@ -750,151 +896,17 @@
       padding: 2px 0 2px 70px;
       color: var(--text-3);
       font-size: 12px;
-    }
-
-    /* ══════════════════════════════
-       HIGHLIGHT FEATURES
-    ══════════════════════════════ */
-    .highlights {
-      padding: 100px 48px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .highlight-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
-      margin-bottom: 100px;
-    }
-    .highlight-row:last-child { margin-bottom: 0; }
-    .highlight-row.reverse { direction: rtl; }
-    .highlight-row.reverse > * { direction: ltr; }
-
-    .highlight-visual {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      aspect-ratio: 4/3;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    }
-
-    .hv-header {
-      height: 40px;
-      background: #1A1D24;
-      display: flex;
-      align-items: center;
-      padding: 0 14px;
-      gap: 7px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .hv-body {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .highlight-text { }
-
-    .hl-meta {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-3);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .hl-title {
-      font-size: 28px;
-      font-weight: 800;
-      line-height: 1.2;
-      letter-spacing: -0.5px;
-      color: var(--text-1);
-      margin-bottom: 16px;
-    }
-
-    .hl-desc {
-      font-size: 15px;
-      color: var(--text-2);
-      line-height: 1.75;
-      margin-bottom: 24px;
-    }
-
-    .hl-points {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .hl-point {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-2);
-    }
-
-    .hl-point-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ══════════════════════════════
-       STATS
-    ══════════════════════════════ */
-    .stats-bar {
-      padding: 60px 48px;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stats-inner {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 40px;
-    }
-
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-num {
-      font-size: 42px;
-      font-weight: 800;
-      letter-spacing: -1.5px;
-      background: linear-gradient(135deg, #FFFFFF 0%, #8B909A 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1;
-      margin-bottom: 8px;
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: var(--text-3);
+      margin-bottom: 4px;
     }
 
     /* ══════════════════════════════
        FOOTER
     ══════════════════════════════ */
     footer {
-      padding: 60px 48px 40px;
+      padding: 64px 48px 40px;
       text-align: center;
-      position: relative;
-      z-index: 1;
+      background: white;
+      border-top: 1px solid var(--border);
     }
 
     .footer-logo {
@@ -931,7 +943,7 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--text-2); }
+    .footer-links a:hover { color: var(--blue); }
 
     .footer-bottom {
       font-size: 12px;
@@ -941,7 +953,7 @@
     }
 
     /* ══════════════════════════════
-       UTILS / SCROLL ANIMATIONS
+       SCROLL ANIMATIONS
     ══════════════════════════════ */
     .fade-up {
       opacity: 0;
@@ -960,7 +972,7 @@
       .features-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
       .stack { padding: 80px 24px; }
       .stack-inner { grid-template-columns: 1fr; gap: 48px; }
-      .highlights { padding: 80px 24px; }
+      .highlights { padding: 60px 24px 80px; }
       .highlight-row { grid-template-columns: 1fr; gap: 40px; }
       .highlight-row.reverse { direction: ltr; }
       .stats-bar { padding: 48px 24px; }
@@ -999,7 +1011,7 @@
   </div>
 
   <h1 class="hero-title">
-    <span class="hero-title-gradient">现代风格的<br/></span>
+    <span class="hero-title-dark">现代风格的<br/></span>
     <span class="hero-title-blue">即时通讯系统</span>
   </h1>
 
@@ -1049,7 +1061,7 @@
             <span>🔍</span> 搜索
           </div>
           <div class="plist-item active">
-            <div class="pitem-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#1677FF,#4ABCFA)"></div>
             <div class="pitem-info">
               <div class="pitem-name">小明</div>
               <div class="pitem-preview">好的，明天见！👋</div>
@@ -1100,7 +1112,7 @@
               <div class="msg-bubble other">明天下午有空吗？一起讨论一下项目</div>
             </div>
             <div class="msg-row self">
-              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#4ABCFA)"></div>
               <div class="msg-bubble self">有的，下午三点怎么样？</div>
             </div>
             <div class="msg-row">
@@ -1108,7 +1120,7 @@
               <div class="msg-bubble other">可以！那就三点，我把方案发给你 📄</div>
             </div>
             <div class="msg-row self">
-              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#4ABCFA)"></div>
               <div class="msg-bubble self">好的，明天见！👋</div>
             </div>
           </div>
@@ -1161,32 +1173,32 @@
 
     <div class="features-grid">
       <div class="feature-card fade-up">
-        <div class="feature-icon" style="background:rgba(22,119,255,0.15)">💬</div>
+        <div class="feature-icon" style="background:#EBF5FF">💬</div>
         <div class="feature-title">实时私聊</div>
         <div class="feature-desc">基于 WebSocket 的实时消息传输，支持文字、图片、文件发送，消息历史分页加载。</div>
       </div>
       <div class="feature-card fade-up" style="transition-delay:0.05s">
-        <div class="feature-icon" style="background:rgba(82,196,26,0.15)">👥</div>
+        <div class="feature-icon" style="background:#F0FFF4">👥</div>
         <div class="feature-title">群组聊天</div>
         <div class="feature-desc">创建、搜索、加入群组，实时群消息，群主管理成员、踢人、设置邀请权限。</div>
       </div>
       <div class="feature-card fade-up" style="transition-delay:0.1s">
-        <div class="feature-icon" style="background:rgba(235,47,150,0.15)">❤️</div>
+        <div class="feature-icon" style="background:#FFF0F6">❤️</div>
         <div class="feature-title">好友系统</div>
         <div class="feature-desc">搜索用户、发送好友请求、接受/拒绝、设置备注，完整的社交关系链管理。</div>
       </div>
       <div class="feature-card fade-up" style="transition-delay:0.15s">
-        <div class="feature-icon" style="background:rgba(250,140,22,0.15)">🏠</div>
+        <div class="feature-icon" style="background:#FFF7E6">🏠</div>
         <div class="feature-title">个人空间</div>
         <div class="feature-desc">类 QQ 空间的动态发布、点赞与评论，支持图文混排，好友动态聚合展示。</div>
       </div>
       <div class="feature-card fade-up" style="transition-delay:0.2s">
-        <div class="feature-icon" style="background:rgba(114,46,209,0.15)">🖼️</div>
+        <div class="feature-icon" style="background:#F9F0FF">🖼️</div>
         <div class="feature-title">图片 / 文件传输</div>
         <div class="feature-desc">聊天内上传图片和文件，服务端存储，消息中内联渲染图片预览，文件可下载。</div>
       </div>
       <div class="feature-card fade-up" style="transition-delay:0.25s">
-        <div class="feature-icon" style="background:rgba(19,194,194,0.15)">😊</div>
+        <div class="feature-icon" style="background:#E6FFFB">😊</div>
         <div class="feature-title">Emoji 选择器</div>
         <div class="feature-desc">内置 5 分类 200+ Emoji，光标位置精准插入，支持连续快速多选，体验流畅。</div>
       </div>
@@ -1210,7 +1222,7 @@
         <div class="hv-body" style="flex-direction:row;gap:0;padding:0">
           <!-- Nav -->
           <div style="width:44px;background:#1E1E1E;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:8px;border-right:1px solid rgba(255,255,255,0.05)">
-            <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+            <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#4ABCFA)"></div>
             <div style="height:16px"></div>
             <div style="width:24px;height:24px;border-radius:5px;background:rgba(22,119,255,0.3);display:flex;align-items:center;justify-content:center;font-size:12px">💬</div>
             <div style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.3">👥</div>
@@ -1220,7 +1232,7 @@
           <div style="width:150px;background:#16181F;border-right:1px solid rgba(255,255,255,0.05);padding:8px 0">
             <div style="padding:0 10px 6px;font-size:11px;font-weight:600;color:#808080">消息</div>
             <div style="padding:6px 8px;background:rgba(22,119,255,0.15);display:flex;gap:8px;align-items:center">
-              <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#722ED1);flex-shrink:0"></div>
+              <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#4ABCFA);flex-shrink:0"></div>
               <div>
                 <div style="font-size:10px;font-weight:500;color:#D0D0D0">小明</div>
                 <div style="font-size:9px;color:rgba(255,255,255,0.3)">好的，明天见！</div>
@@ -1244,7 +1256,7 @@
                 <div style="background:#1E2028;padding:6px 10px;border-radius:7px 7px 7px 2px;font-size:10px;color:#C0C0C0;line-height:1.5">明天下午有空吗？</div>
               </div>
               <div style="display:flex;gap:7px;align-items:flex-end;flex-direction:row-reverse">
-                <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#1677FF,#722ED1);flex-shrink:0"></div>
+                <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#1677FF,#4ABCFA);flex-shrink:0"></div>
                 <div style="background:#1B3A6B;padding:6px 10px;border-radius:7px 7px 2px 7px;font-size:10px;color:#C0C0C0;line-height:1.5">下午三点怎么样？</div>
               </div>
             </div>
@@ -1283,19 +1295,17 @@
           <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-left:8px">群组面板</span>
         </div>
         <div class="hv-body">
-          <!-- Avatar section -->
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.07)">
             <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#FA8C16,#EB2F96);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white">前</div>
             <div style="font-size:12px;font-weight:600;color:#D0D0D0">前端开发</div>
             <div style="font-size:10px;color:rgba(255,255,255,0.3)">6 名成员</div>
           </div>
-          <!-- Member grid -->
           <div style="margin-top:12px">
             <div style="font-size:9px;font-weight:600;color:#555B67;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px">群成员（6）</div>
             <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
               <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
                 <div style="position:relative">
-                  <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+                  <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#1677FF,#4ABCFA)"></div>
                   <div style="position:absolute;bottom:-3px;right:-3px;font-size:9px">♛</div>
                 </div>
                 <span style="font-size:9px;color:rgba(255,255,255,0.35)">小明</span>
@@ -1352,7 +1362,6 @@
           <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-left:8px">WebSocket 实时通信</span>
         </div>
         <div class="hv-body" style="justify-content:center;align-items:center;gap:24px">
-          <!-- WS diagram -->
           <div style="display:flex;align-items:center;gap:20px;width:100%">
             <div style="flex:1;background:#1A1D24;border:1px solid rgba(22,119,255,0.3);border-radius:10px;padding:14px;text-align:center">
               <div style="font-size:20px;margin-bottom:6px">🖥️</div>
@@ -1361,14 +1370,14 @@
             </div>
             <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
               <div style="display:flex;align-items:center;gap:4px">
-                <div style="height:2px;width:60px;background:linear-gradient(90deg,#1677FF,transparent)"></div>
-                <div style="font-size:10px;color:#1677FF;white-space:nowrap">chat_private</div>
-                <div style="height:2px;width:60px;background:linear-gradient(90deg,transparent,#1677FF)"></div>
+                <div style="height:2px;width:50px;background:linear-gradient(90deg,#1677FF,transparent)"></div>
+                <div style="font-size:9px;color:#4ABCFA;white-space:nowrap">chat_private</div>
+                <div style="height:2px;width:50px;background:linear-gradient(90deg,transparent,#1677FF)"></div>
               </div>
               <div style="display:flex;align-items:center;gap:4px">
-                <div style="height:2px;width:60px;background:linear-gradient(90deg,transparent,#52C41A)"></div>
-                <div style="font-size:10px;color:#52C41A;white-space:nowrap">message</div>
-                <div style="height:2px;width:60px;background:linear-gradient(90deg,#52C41A,transparent)"></div>
+                <div style="height:2px;width:50px;background:linear-gradient(90deg,transparent,#52C41A)"></div>
+                <div style="font-size:9px;color:#95DE64;white-space:nowrap">message</div>
+                <div style="height:2px;width:50px;background:linear-gradient(90deg,#52C41A,transparent)"></div>
               </div>
               <div style="font-size:9px;color:#555B67">WebSocket</div>
             </div>
@@ -1378,10 +1387,10 @@
               <div style="font-size:9px;color:#555B67;margin-top:3px">gorilla/websocket Hub</div>
             </div>
           </div>
-          <div style="display:flex;gap:10px;width:100%;justify-content:center">
-            <div style="padding:5px 12px;background:rgba(22,119,255,0.1);border:1px solid rgba(22,119,255,0.2);border-radius:6px;font-size:10px;color:#69B1FF">chat_group</div>
+          <div style="display:flex;gap:10px;width:100%;justify-content:center;flex-wrap:wrap">
+            <div style="padding:5px 12px;background:rgba(22,119,255,0.12);border:1px solid rgba(22,119,255,0.25);border-radius:6px;font-size:10px;color:#4ABCFA">chat_group</div>
             <div style="padding:5px 12px;background:rgba(82,196,26,0.1);border:1px solid rgba(82,196,26,0.2);border-radius:6px;font-size:10px;color:#95DE64">friend_online</div>
-            <div style="padding:5px 12px;background:rgba(250,140,22,0.1);border:1px solid rgba(250,140,22,0.2);border-radius:6px;font-size:10px;color:#FFC53D">friend_request</div>
+            <div style="padding:5px 12px;background:rgba(240,160,48,0.1);border:1px solid rgba(240,160,48,0.2);border-radius:6px;font-size:10px;color:#FFC53D">friend_request</div>
           </div>
         </div>
       </div>
@@ -1440,36 +1449,36 @@
         <div class="arch-layer">
           <div class="arch-label">浏览器</div>
           <div class="arch-boxes">
-            <div class="arch-box" style="background:rgba(22,119,255,0.12);color:#69B1FF;border:1px solid rgba(22,119,255,0.2)">Vue 3 Views</div>
-            <div class="arch-box" style="background:rgba(22,119,255,0.12);color:#69B1FF;border:1px solid rgba(22,119,255,0.2)">Components</div>
-            <div class="arch-box" style="background:rgba(22,119,255,0.08);color:#69B1FF;border:1px solid rgba(22,119,255,0.15)">Pinia Store</div>
+            <div class="arch-box" style="background:rgba(22,119,255,0.08);color:#1677FF;border:1px solid rgba(22,119,255,0.2)">Vue 3 Views</div>
+            <div class="arch-box" style="background:rgba(22,119,255,0.08);color:#1677FF;border:1px solid rgba(22,119,255,0.2)">Components</div>
+            <div class="arch-box" style="background:rgba(22,119,255,0.05);color:#4096FF;border:1px solid rgba(22,119,255,0.14)">Pinia Store</div>
           </div>
         </div>
         <div class="arch-arrow">↕ HTTP / WebSocket</div>
         <div class="arch-layer">
           <div class="arch-label">Handler</div>
           <div class="arch-boxes">
-            <div class="arch-box" style="background:rgba(82,196,26,0.1);color:#95DE64;border:1px solid rgba(82,196,26,0.2)">Gin Router</div>
-            <div class="arch-box" style="background:rgba(82,196,26,0.1);color:#95DE64;border:1px solid rgba(82,196,26,0.2)">WS Hub</div>
-            <div class="arch-box" style="background:rgba(82,196,26,0.07);color:#95DE64;border:1px solid rgba(82,196,26,0.15)">Middleware</div>
+            <div class="arch-box" style="background:rgba(82,196,26,0.08);color:#389E0D;border:1px solid rgba(82,196,26,0.2)">Gin Router</div>
+            <div class="arch-box" style="background:rgba(82,196,26,0.08);color:#389E0D;border:1px solid rgba(82,196,26,0.2)">WS Hub</div>
+            <div class="arch-box" style="background:rgba(82,196,26,0.05);color:#52C41A;border:1px solid rgba(82,196,26,0.14)">Middleware</div>
           </div>
         </div>
         <div class="arch-arrow">↕</div>
         <div class="arch-layer">
           <div class="arch-label">Service</div>
           <div class="arch-boxes">
-            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Auth</div>
-            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Chat</div>
-            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Group</div>
-            <div class="arch-box" style="background:rgba(250,140,22,0.08);color:#FFC53D;border:1px solid rgba(250,140,22,0.15)">Space</div>
+            <div class="arch-box" style="background:rgba(240,160,48,0.09);color:#D46B08;border:1px solid rgba(240,160,48,0.22)">Auth</div>
+            <div class="arch-box" style="background:rgba(240,160,48,0.09);color:#D46B08;border:1px solid rgba(240,160,48,0.22)">Chat</div>
+            <div class="arch-box" style="background:rgba(240,160,48,0.09);color:#D46B08;border:1px solid rgba(240,160,48,0.22)">Group</div>
+            <div class="arch-box" style="background:rgba(240,160,48,0.06);color:#F0A030;border:1px solid rgba(240,160,48,0.16)">Space</div>
           </div>
         </div>
         <div class="arch-arrow">↕</div>
         <div class="arch-layer">
           <div class="arch-label">DAO / DB</div>
           <div class="arch-boxes">
-            <div class="arch-box" style="background:rgba(114,46,209,0.12);color:#B37FEB;border:1px solid rgba(114,46,209,0.25)">GORM v2</div>
-            <div class="arch-box" style="background:rgba(114,46,209,0.12);color:#B37FEB;border:1px solid rgba(114,46,209,0.25)">SQLite</div>
+            <div class="arch-box" style="background:rgba(114,46,209,0.08);color:#531DAB;border:1px solid rgba(114,46,209,0.2)">GORM v2</div>
+            <div class="arch-box" style="background:rgba(114,46,209,0.08);color:#531DAB;border:1px solid rgba(114,46,209,0.2)">SQLite</div>
           </div>
         </div>
       </div>
@@ -1499,7 +1508,6 @@
 </footer>
 
 <script>
-  // Scroll fade-in animation
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(el => {
       if (el.isIntersecting) {
