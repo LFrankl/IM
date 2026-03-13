@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IM · 仿 QQ NT 即时通讯系统</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue: #1677FF;
+      --blue-light: #E6F4FF;
+      --blue-dark: #0958D9;
+      --green: #52C41A;
+      --red: #FF4D4F;
+      --purple: #722ED1;
+      --gold: #FAAD14;
+
+      --bg: #0A0C10;
+      --bg-card: #111318;
+      --bg-card2: #16191F;
+      --border: rgba(255,255,255,0.07);
+      --border-bright: rgba(255,255,255,0.12);
+
+      --text-1: #F0F2F5;
+      --text-2: #8B909A;
+      --text-3: #555B67;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: "PingFang SC", "Microsoft YaHei UI", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ══════════════════════════════
+       NAV
+    ══════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 48px;
+      background: rgba(10, 12, 16, 0.7);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text-1);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #1677FF 0%, #722ED1 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      color: var(--text-2);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text-1); }
+
+    .nav-cta {
+      background: var(--blue);
+      color: white !important;
+      padding: 7px 18px;
+      border-radius: 7px;
+      font-weight: 500;
+      transition: opacity 0.2s !important;
+    }
+    .nav-cta:hover { opacity: 0.85 !important; color: white !important; }
+
+    /* ══════════════════════════════
+       HERO
+    ══════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      overflow: hidden;
+    }
+
+    /* Background glow orbs */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 600px;
+      background: radial-gradient(ellipse at center,
+        rgba(22,119,255,0.18) 0%,
+        rgba(114,46,209,0.10) 40%,
+        transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(22,119,255,0.12);
+      border: 1px solid rgba(22,119,255,0.3);
+      color: #69B1FF;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+      letter-spacing: 0.03em;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      background: #1677FF;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .hero-title {
+      font-size: clamp(40px, 7vw, 80px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-title-gradient {
+      background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.5) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-title-blue {
+      background: linear-gradient(135deg, #1677FF 0%, #9254DE 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 18px;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 540px;
+      margin: 0 auto 44px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #1677FF;
+      color: white;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 10px;
+      transition: all 0.2s;
+      box-shadow: 0 0 32px rgba(22,119,255,0.35);
+    }
+    .btn-primary:hover {
+      background: #4096FF;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 40px rgba(22,119,255,0.5);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.06);
+      color: var(--text-1);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 12px 28px;
+      border-radius: 10px;
+      border: 1px solid var(--border-bright);
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-1px);
+    }
+
+    /* ── UI Preview ── */
+    .hero-preview {
+      position: relative;
+      z-index: 1;
+      margin-top: 72px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .preview-glow {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 100px;
+      background: radial-gradient(ellipse, rgba(22,119,255,0.25) 0%, transparent 70%);
+      filter: blur(20px);
+    }
+
+    .preview-frame {
+      background: var(--bg-card);
+      border: 1px solid var(--border-bright);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 40px 100px rgba(0,0,0,0.7),
+        0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .preview-titlebar {
+      height: 38px;
+      background: #1A1D24;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .titlebar-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .preview-content {
+      display: flex;
+      height: 480px;
+    }
+
+    /* Nav sidebar */
+    .preview-nav {
+      width: 58px;
+      background: #1E1E1E;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+      gap: 6px;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .pnav-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #1677FF, #722ED1);
+      margin-bottom: 10px;
+    }
+
+    .pnav-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      opacity: 0.45;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pnav-icon.active {
+      background: rgba(255,255,255,0.1);
+      opacity: 1;
+    }
+
+    /* List panel */
+    .preview-list {
+      width: 230px;
+      background: #16181F;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .plist-header {
+      height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .plist-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #E0E0E0;
+    }
+
+    .plist-search {
+      height: 28px;
+      margin: 8px 10px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.25);
+    }
+
+    .plist-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      transition: background 0.1s;
+    }
+    .plist-item.active { background: rgba(22,119,255,0.15); }
+    .plist-item:not(.active):hover { background: rgba(255,255,255,0.04); }
+
+    .pitem-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .pitem-info { flex: 1; min-width: 0; }
+
+    .pitem-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: #D0D0D0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pitem-preview {
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pitem-badge {
+      min-width: 16px;
+      height: 16px;
+      background: var(--red);
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+
+    /* Chat area */
+    .preview-chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #111318;
+    }
+
+    .pchat-header {
+      height: 48px;
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .pchat-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E0E0E0;
+    }
+
+    .pchat-msgs {
+      flex: 1;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .msg-row.self { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .msg-bubble {
+      max-width: 200px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #E0E0E0;
+    }
+    .msg-bubble.other {
+      background: #1E2028;
+      border-bottom-left-radius: 3px;
+    }
+    .msg-bubble.self {
+      background: #1B3A6B;
+      border-bottom-right-radius: 3px;
+    }
+
+    .pchat-toolbar {
+      height: 32px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .toolbar-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .pchat-input {
+      height: 72px;
+      padding: 10px 20px;
+    }
+
+    .input-placeholder {
+      height: 100%;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .input-cursor {
+      position: absolute;
+      left: 12px;
+      top: 10px;
+      width: 2px;
+      height: 16px;
+      background: #1677FF;
+      border-radius: 1px;
+      animation: blink 1.2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ══════════════════════════════
+       FEATURES SECTION
+    ══════════════════════════════ */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1677FF;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      color: var(--text-1);
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-2);
+      line-height: 1.7;
+      max-width: 520px;
+    }
+
+    /* Features grid */
+    .features {
+      padding: 120px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+    .features-header .section-desc { margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.015) 100%);
+      pointer-events: none;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-3px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .feature-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 18px;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-1);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.7;
+    }
+
+    /* ══════════════════════════════
+       TECH STACK SECTION
+    ══════════════════════════════ */
+    .stack {
+      padding: 100px 48px;
+      background: linear-gradient(180deg, transparent 0%, rgba(22,119,255,0.04) 50%, transparent 100%);
+    }
+
+    .stack-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .stack-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 36px;
+    }
+
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-1);
+      transition: all 0.2s;
+    }
+    .pill:hover {
+      border-color: var(--border-bright);
+      background: var(--bg-card2);
+    }
+
+    .pill-icon { font-size: 16px; }
+
+    .pill-badge {
+      font-size: 10px;
+      background: rgba(22,119,255,0.2);
+      color: #69B1FF;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Architecture diagram */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      font-size: 12px;
+    }
+
+    .arch-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 20px;
+    }
+
+    .arch-layer {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .arch-label {
+      width: 64px;
+      font-size: 10px;
+      color: var(--text-3);
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .arch-boxes {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .arch-box {
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .arch-arrow {
+      display: flex;
+      align-items: center;
+      padding: 2px 0 2px 70px;
+      color: var(--text-3);
+      font-size: 12px;
+    }
+
+    /* ══════════════════════════════
+       HIGHLIGHT FEATURES
+    ══════════════════════════════ */
+    .highlights {
+      padding: 100px 48px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .highlight-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      margin-bottom: 100px;
+    }
+    .highlight-row:last-child { margin-bottom: 0; }
+    .highlight-row.reverse { direction: rtl; }
+    .highlight-row.reverse > * { direction: ltr; }
+
+    .highlight-visual {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      aspect-ratio: 4/3;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .hv-header {
+      height: 40px;
+      background: #1A1D24;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 7px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hv-body {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .highlight-text { }
+
+    .hl-meta {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .hl-title {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      color: var(--text-1);
+      margin-bottom: 16px;
+    }
+
+    .hl-desc {
+      font-size: 15px;
+      color: var(--text-2);
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+
+    .hl-points {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hl-point {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+
+    .hl-point-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       STATS
+    ══════════════════════════════ */
+    .stats-bar {
+      padding: 60px 48px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 40px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      background: linear-gradient(135deg, #FFFFFF 0%, #8B909A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-3);
+    }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    footer {
+      padding: 60px 48px 40px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-1);
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
+
+    .footer-desc {
+      font-size: 14px;
+      color: var(--text-3);
+      margin-bottom: 32px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-3);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--text-2); }
+
+    .footer-bottom {
+      font-size: 12px;
+      color: var(--text-3);
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+
+    /* ══════════════════════════════
+       UTILS / SCROLL ANIMATIONS
+    ══════════════════════════════ */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 900px) {
+      nav { padding: 0 24px; }
+      .nav-links { display: none; }
+      .features { padding: 80px 24px; }
+      .features-grid { grid-template-columns: 1fr 1fr; gap: 14px; }
+      .stack { padding: 80px 24px; }
+      .stack-inner { grid-template-columns: 1fr; gap: 48px; }
+      .highlights { padding: 80px 24px; }
+      .highlight-row { grid-template-columns: 1fr; gap: 40px; }
+      .highlight-row.reverse { direction: ltr; }
+      .stats-bar { padding: 48px 24px; }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+      footer { padding: 48px 24px 32px; }
+    }
+
+    @media (max-width: 600px) {
+      .features-grid { grid-template-columns: 1fr; }
+      .hero-title { letter-spacing: -1px; }
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="nav-logo-icon">💬</div>
+    IM
+  </a>
+  <div class="nav-links">
+    <a href="#features">功能特性</a>
+    <a href="#stack">技术栈</a>
+    <a href="#highlights">设计亮点</a>
+    <a href="https://github.com/LFrankl/IM" target="_blank" class="nav-cta">GitHub →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    仿 QQ NT 设计语言 · Vue3 + Go
+  </div>
+
+  <h1 class="hero-title">
+    <span class="hero-title-gradient">现代风格的<br/></span>
+    <span class="hero-title-blue">即时通讯系统</span>
+  </h1>
+
+  <p class="hero-desc">
+    还原 QQ NT 桌面端的交互体验，支持私聊、群组、好友管理与个人空间。<br/>
+    前后端全栈，开箱即用。
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://github.com/LFrankl/IM" target="_blank" class="btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      在 GitHub 查看源码
+    </a>
+    <a href="#features" class="btn-secondary">
+      了解功能特性 ↓
+    </a>
+  </div>
+
+  <!-- UI MOCKUP -->
+  <div class="hero-preview">
+    <div class="preview-glow"></div>
+    <div class="preview-frame">
+      <div class="preview-titlebar">
+        <div class="titlebar-dot" style="background:#FF5F57"></div>
+        <div class="titlebar-dot" style="background:#FEBC2E"></div>
+        <div class="titlebar-dot" style="background:#28C840"></div>
+        <div style="flex:1;text-align:center;font-size:11px;color:rgba(255,255,255,0.2)">IM · 即时通讯</div>
+      </div>
+      <div class="preview-content">
+        <!-- Nav -->
+        <div class="preview-nav">
+          <div class="pnav-avatar"></div>
+          <div class="pnav-icon active">💬</div>
+          <div class="pnav-icon">👥</div>
+          <div class="pnav-icon">🏠</div>
+          <div class="pnav-icon">📷</div>
+          <div style="flex:1"></div>
+          <div class="pnav-icon">⚙️</div>
+        </div>
+        <!-- List -->
+        <div class="preview-list">
+          <div class="plist-header">
+            <span class="plist-title">消息</span>
+            <span style="font-size:11px;color:rgba(255,255,255,0.2)">···</span>
+          </div>
+          <div class="plist-search">
+            <span>🔍</span> 搜索
+          </div>
+          <div class="plist-item active">
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+            <div class="pitem-info">
+              <div class="pitem-name">小明</div>
+              <div class="pitem-preview">好的，明天见！👋</div>
+            </div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.2)">刚刚</div>
+          </div>
+          <div class="plist-item">
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#52C41A,#13C2C2)"></div>
+            <div class="pitem-info">
+              <div class="pitem-name">Vue 技术群</div>
+              <div class="pitem-preview">小红：这个问题解决了！</div>
+            </div>
+            <div class="pitem-badge">3</div>
+          </div>
+          <div class="plist-item">
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#FA8C16,#EB2F96)"></div>
+            <div class="pitem-info">
+              <div class="pitem-name">小红</div>
+              <div class="pitem-preview">[图片]</div>
+            </div>
+          </div>
+          <div class="plist-item">
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#722ED1,#1677FF)"></div>
+            <div class="pitem-info">
+              <div class="pitem-name">前端开发</div>
+              <div class="pitem-preview">小刚：部署完成✅</div>
+            </div>
+            <div class="pitem-badge">12</div>
+          </div>
+          <div class="plist-item">
+            <div class="pitem-avatar" style="background:linear-gradient(135deg,#13C2C2,#52C41A)"></div>
+            <div class="pitem-info">
+              <div class="pitem-name">小强</div>
+              <div class="pitem-preview">哈哈哈哈 😂</div>
+            </div>
+          </div>
+        </div>
+        <!-- Chat -->
+        <div class="preview-chat">
+          <div class="pchat-header">
+            <span class="pchat-name">小明</span>
+            <div style="flex:1"></div>
+            <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-right:8px">···</span>
+          </div>
+          <div class="pchat-msgs">
+            <div class="msg-row">
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#52C41A,#13C2C2)"></div>
+              <div class="msg-bubble other">明天下午有空吗？一起讨论一下项目</div>
+            </div>
+            <div class="msg-row self">
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+              <div class="msg-bubble self">有的，下午三点怎么样？</div>
+            </div>
+            <div class="msg-row">
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#52C41A,#13C2C2)"></div>
+              <div class="msg-bubble other">可以！那就三点，我把方案发给你 📄</div>
+            </div>
+            <div class="msg-row self">
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+              <div class="msg-bubble self">好的，明天见！👋</div>
+            </div>
+          </div>
+          <div class="pchat-toolbar">
+            <div class="toolbar-icon">😊</div>
+            <div class="toolbar-icon">🖼</div>
+            <div class="toolbar-icon">📎</div>
+          </div>
+          <div class="pchat-input">
+            <div class="input-placeholder">
+              <div class="input-cursor"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item fade-up">
+      <div class="stat-num">17+</div>
+      <div class="stat-label">Vue 组件</div>
+    </div>
+    <div class="stat-item fade-up" style="transition-delay:0.1s">
+      <div class="stat-num">8</div>
+      <div class="stat-label">数据模型</div>
+    </div>
+    <div class="stat-item fade-up" style="transition-delay:0.2s">
+      <div class="stat-num">40+</div>
+      <div class="stat-label">CSS 变量</div>
+    </div>
+    <div class="stat-item fade-up" style="transition-delay:0.3s">
+      <div class="stat-num">全栈</div>
+      <div class="stat-label">Vue3 + Go</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="features">
+    <div class="features-header">
+      <div class="section-label">✦ 功能特性</div>
+      <h2 class="section-title">一切你需要的<br/>即时通讯功能</h2>
+      <p class="section-desc">从私聊到群组，从好友管理到个人空间，完整还原 QQ 的核心使用场景。</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon" style="background:rgba(22,119,255,0.15)">💬</div>
+        <div class="feature-title">实时私聊</div>
+        <div class="feature-desc">基于 WebSocket 的实时消息传输，支持文字、图片、文件发送，消息历史分页加载。</div>
+      </div>
+      <div class="feature-card fade-up" style="transition-delay:0.05s">
+        <div class="feature-icon" style="background:rgba(82,196,26,0.15)">👥</div>
+        <div class="feature-title">群组聊天</div>
+        <div class="feature-desc">创建、搜索、加入群组，实时群消息，群主管理成员、踢人、设置邀请权限。</div>
+      </div>
+      <div class="feature-card fade-up" style="transition-delay:0.1s">
+        <div class="feature-icon" style="background:rgba(235,47,150,0.15)">❤️</div>
+        <div class="feature-title">好友系统</div>
+        <div class="feature-desc">搜索用户、发送好友请求、接受/拒绝、设置备注，完整的社交关系链管理。</div>
+      </div>
+      <div class="feature-card fade-up" style="transition-delay:0.15s">
+        <div class="feature-icon" style="background:rgba(250,140,22,0.15)">🏠</div>
+        <div class="feature-title">个人空间</div>
+        <div class="feature-desc">类 QQ 空间的动态发布、点赞与评论，支持图文混排，好友动态聚合展示。</div>
+      </div>
+      <div class="feature-card fade-up" style="transition-delay:0.2s">
+        <div class="feature-icon" style="background:rgba(114,46,209,0.15)">🖼️</div>
+        <div class="feature-title">图片 / 文件传输</div>
+        <div class="feature-desc">聊天内上传图片和文件，服务端存储，消息中内联渲染图片预览，文件可下载。</div>
+      </div>
+      <div class="feature-card fade-up" style="transition-delay:0.25s">
+        <div class="feature-icon" style="background:rgba(19,194,194,0.15)">😊</div>
+        <div class="feature-title">Emoji 选择器</div>
+        <div class="feature-desc">内置 5 分类 200+ Emoji，光标位置精准插入，支持连续快速多选，体验流畅。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HIGHLIGHTS -->
+<section id="highlights">
+  <div class="highlights">
+
+    <!-- Row 1: UI -->
+    <div class="highlight-row fade-up">
+      <div class="highlight-visual">
+        <div class="hv-header">
+          <div class="titlebar-dot" style="background:#FF5F57;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#FEBC2E;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#28C840;width:10px;height:10px"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-left:8px">三列布局</span>
+        </div>
+        <div class="hv-body" style="flex-direction:row;gap:0;padding:0">
+          <!-- Nav -->
+          <div style="width:44px;background:#1E1E1E;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:8px;border-right:1px solid rgba(255,255,255,0.05)">
+            <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+            <div style="height:16px"></div>
+            <div style="width:24px;height:24px;border-radius:5px;background:rgba(22,119,255,0.3);display:flex;align-items:center;justify-content:center;font-size:12px">💬</div>
+            <div style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.3">👥</div>
+            <div style="width:24px;height:24px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.3">🏠</div>
+          </div>
+          <!-- List -->
+          <div style="width:150px;background:#16181F;border-right:1px solid rgba(255,255,255,0.05);padding:8px 0">
+            <div style="padding:0 10px 6px;font-size:11px;font-weight:600;color:#808080">消息</div>
+            <div style="padding:6px 8px;background:rgba(22,119,255,0.15);display:flex;gap:8px;align-items:center">
+              <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#1677FF,#722ED1);flex-shrink:0"></div>
+              <div>
+                <div style="font-size:10px;font-weight:500;color:#D0D0D0">小明</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.3)">好的，明天见！</div>
+              </div>
+            </div>
+            <div style="padding:6px 8px;display:flex;gap:8px;align-items:center">
+              <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,#52C41A,#13C2C2);flex-shrink:0"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:10px;font-weight:500;color:#808080">Vue 技术群</div>
+                <div style="font-size:9px;color:rgba(255,255,255,0.2)">这个问题解决了！</div>
+              </div>
+              <div style="min-width:14px;height:14px;background:#FF4D4F;border-radius:7px;font-size:8px;color:white;display:flex;align-items:center;justify-content:center;padding:0 3px">3</div>
+            </div>
+          </div>
+          <!-- Chat -->
+          <div style="flex:1;background:#111318;display:flex;flex-direction:column">
+            <div style="height:34px;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;padding:0 14px;font-size:11px;font-weight:600;color:#D0D0D0">小明</div>
+            <div style="flex:1;padding:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:7px;align-items:flex-end">
+                <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#52C41A,#13C2C2);flex-shrink:0"></div>
+                <div style="background:#1E2028;padding:6px 10px;border-radius:7px 7px 7px 2px;font-size:10px;color:#C0C0C0;line-height:1.5">明天下午有空吗？</div>
+              </div>
+              <div style="display:flex;gap:7px;align-items:flex-end;flex-direction:row-reverse">
+                <div style="width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#1677FF,#722ED1);flex-shrink:0"></div>
+                <div style="background:#1B3A6B;padding:6px 10px;border-radius:7px 7px 2px 7px;font-size:10px;color:#C0C0C0;line-height:1.5">下午三点怎么样？</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-text">
+        <div class="hl-meta">UI 设计</div>
+        <h3 class="hl-title">忠实还原<br/>QQ NT 三列布局</h3>
+        <p class="hl-desc">深色导航栏 + 浅色列表面板 + 内容区的经典三列设计，每一处间距、圆角与配色都参照 QQ NT 规范实现。</p>
+        <div class="hl-points">
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#1677FF"></div>
+            68px 深色导航栏，图标交互精致
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#52C41A"></div>
+            280px 列表面板，对话预览 + 未读角标
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#722ED1"></div>
+            自研消息气泡，自己蓝他人白
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Group -->
+    <div class="highlight-row reverse fade-up">
+      <div class="highlight-visual">
+        <div class="hv-header">
+          <div class="titlebar-dot" style="background:#FF5F57;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#FEBC2E;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#28C840;width:10px;height:10px"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-left:8px">群组面板</span>
+        </div>
+        <div class="hv-body">
+          <!-- Avatar section -->
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.07)">
+            <div style="width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#FA8C16,#EB2F96);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white">前</div>
+            <div style="font-size:12px;font-weight:600;color:#D0D0D0">前端开发</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.3)">6 名成员</div>
+          </div>
+          <!-- Member grid -->
+          <div style="margin-top:12px">
+            <div style="font-size:9px;font-weight:600;color:#555B67;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px">群成员（6）</div>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="position:relative">
+                  <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#1677FF,#722ED1)"></div>
+                  <div style="position:absolute;bottom:-3px;right:-3px;font-size:9px">♛</div>
+                </div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.35)">小明</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#52C41A,#13C2C2)"></div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.35)">小红</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#FA8C16,#EB2F96)"></div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.35)">小强</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="width:32px;height:32px;border-radius:7px;background:linear-gradient(135deg,#722ED1,#1677FF)"></div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.35)">小刚</span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                <div style="width:32px;height:32px;border-radius:7px;border:1.5px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.25);font-size:16px">+</div>
+                <span style="font-size:9px;color:rgba(255,255,255,0.25)">邀请</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-text">
+        <div class="hl-meta">群组系统</div>
+        <h3 class="hl-title">完整的群组<br/>管理体验</h3>
+        <p class="hl-desc">仿照 QQ 设计的群成员头像网格，群主皇冠标识、踢人、邀请一应俱全，权限控制细粒度可配置。</p>
+        <div class="hl-points">
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#FA8C16"></div>
+            5 列头像网格，最多展示 20 人
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#EB2F96"></div>
+            群主 ♛ 标识 + hover 踢出按钮
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#722ED1"></div>
+            邀请权限由群主控制，精细化管理
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 3: Real-time -->
+    <div class="highlight-row fade-up">
+      <div class="highlight-visual">
+        <div class="hv-header">
+          <div class="titlebar-dot" style="background:#FF5F57;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#FEBC2E;width:10px;height:10px"></div>
+          <div class="titlebar-dot" style="background:#28C840;width:10px;height:10px"></div>
+          <span style="font-size:11px;color:rgba(255,255,255,0.2);margin-left:8px">WebSocket 实时通信</span>
+        </div>
+        <div class="hv-body" style="justify-content:center;align-items:center;gap:24px">
+          <!-- WS diagram -->
+          <div style="display:flex;align-items:center;gap:20px;width:100%">
+            <div style="flex:1;background:#1A1D24;border:1px solid rgba(22,119,255,0.3);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:20px;margin-bottom:6px">🖥️</div>
+              <div style="font-size:11px;font-weight:600;color:#D0D0D0">Vue 3 客户端</div>
+              <div style="font-size:9px;color:#555B67;margin-top:3px">useWS composable</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="height:2px;width:60px;background:linear-gradient(90deg,#1677FF,transparent)"></div>
+                <div style="font-size:10px;color:#1677FF;white-space:nowrap">chat_private</div>
+                <div style="height:2px;width:60px;background:linear-gradient(90deg,transparent,#1677FF)"></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px">
+                <div style="height:2px;width:60px;background:linear-gradient(90deg,transparent,#52C41A)"></div>
+                <div style="font-size:10px;color:#52C41A;white-space:nowrap">message</div>
+                <div style="height:2px;width:60px;background:linear-gradient(90deg,#52C41A,transparent)"></div>
+              </div>
+              <div style="font-size:9px;color:#555B67">WebSocket</div>
+            </div>
+            <div style="flex:1;background:#1A1D24;border:1px solid rgba(82,196,26,0.3);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:20px;margin-bottom:6px">⚡</div>
+              <div style="font-size:11px;font-weight:600;color:#D0D0D0">Go 服务端</div>
+              <div style="font-size:9px;color:#555B67;margin-top:3px">gorilla/websocket Hub</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;width:100%;justify-content:center">
+            <div style="padding:5px 12px;background:rgba(22,119,255,0.1);border:1px solid rgba(22,119,255,0.2);border-radius:6px;font-size:10px;color:#69B1FF">chat_group</div>
+            <div style="padding:5px 12px;background:rgba(82,196,26,0.1);border:1px solid rgba(82,196,26,0.2);border-radius:6px;font-size:10px;color:#95DE64">friend_online</div>
+            <div style="padding:5px 12px;background:rgba(250,140,22,0.1);border:1px solid rgba(250,140,22,0.2);border-radius:6px;font-size:10px;color:#FFC53D">friend_request</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-text">
+        <div class="hl-meta">实时通信</div>
+        <h3 class="hl-title">WebSocket<br/>全双工实时推送</h3>
+        <p class="hl-desc">基于 gorilla/websocket 的服务端 Hub 架构，配合前端自定义 useWS composable，消息实时到达无需轮询。</p>
+        <div class="hl-points">
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#1677FF"></div>
+            私聊、群消息、好友状态全部实时推送
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#52C41A"></div>
+            JWT 鉴权建连，断线自动重连
+          </div>
+          <div class="hl-point">
+            <div class="hl-point-dot" style="background:#13C2C2"></div>
+            统一消息协议，扩展方便
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section id="stack">
+  <div class="stack">
+    <div class="stack-inner">
+      <div>
+        <div class="section-label fade-up">⚙️ 技术栈</div>
+        <h2 class="section-title fade-up">现代化全栈<br/>工程实践</h2>
+        <p class="section-desc fade-up" style="margin-bottom:0">前端 Vue 3 Composition API + Pinia，后端 Go + Gin + GORM，完整的分层架构，代码结构清晰易扩展。</p>
+
+        <div class="stack-pills">
+          <div class="pill fade-up"><span class="pill-icon">💚</span> Vue 3 <span class="pill-badge">前端</span></div>
+          <div class="pill fade-up" style="transition-delay:0.05s"><span class="pill-icon">🔷</span> TypeScript</div>
+          <div class="pill fade-up" style="transition-delay:0.1s"><span class="pill-icon">🍍</span> Pinia</div>
+          <div class="pill fade-up" style="transition-delay:0.15s"><span class="pill-icon">⚡</span> Vite 5</div>
+          <div class="pill fade-up" style="transition-delay:0.2s"><span class="pill-icon">🐹</span> Go 1.21+ <span class="pill-badge">后端</span></div>
+          <div class="pill fade-up" style="transition-delay:0.25s"><span class="pill-icon">🌐</span> Gin</div>
+          <div class="pill fade-up" style="transition-delay:0.3s"><span class="pill-icon">🗄️</span> GORM v2</div>
+          <div class="pill fade-up" style="transition-delay:0.35s"><span class="pill-icon">🪶</span> SQLite</div>
+          <div class="pill fade-up" style="transition-delay:0.4s"><span class="pill-icon">🔌</span> WebSocket</div>
+          <div class="pill fade-up" style="transition-delay:0.45s"><span class="pill-icon">🔑</span> JWT</div>
+        </div>
+      </div>
+
+      <!-- Architecture diagram -->
+      <div class="arch-diagram fade-up">
+        <div class="arch-title">架构分层</div>
+
+        <div class="arch-layer">
+          <div class="arch-label">浏览器</div>
+          <div class="arch-boxes">
+            <div class="arch-box" style="background:rgba(22,119,255,0.12);color:#69B1FF;border:1px solid rgba(22,119,255,0.2)">Vue 3 Views</div>
+            <div class="arch-box" style="background:rgba(22,119,255,0.12);color:#69B1FF;border:1px solid rgba(22,119,255,0.2)">Components</div>
+            <div class="arch-box" style="background:rgba(22,119,255,0.08);color:#69B1FF;border:1px solid rgba(22,119,255,0.15)">Pinia Store</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↕ HTTP / WebSocket</div>
+        <div class="arch-layer">
+          <div class="arch-label">Handler</div>
+          <div class="arch-boxes">
+            <div class="arch-box" style="background:rgba(82,196,26,0.1);color:#95DE64;border:1px solid rgba(82,196,26,0.2)">Gin Router</div>
+            <div class="arch-box" style="background:rgba(82,196,26,0.1);color:#95DE64;border:1px solid rgba(82,196,26,0.2)">WS Hub</div>
+            <div class="arch-box" style="background:rgba(82,196,26,0.07);color:#95DE64;border:1px solid rgba(82,196,26,0.15)">Middleware</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↕</div>
+        <div class="arch-layer">
+          <div class="arch-label">Service</div>
+          <div class="arch-boxes">
+            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Auth</div>
+            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Chat</div>
+            <div class="arch-box" style="background:rgba(250,140,22,0.1);color:#FFC53D;border:1px solid rgba(250,140,22,0.2)">Group</div>
+            <div class="arch-box" style="background:rgba(250,140,22,0.08);color:#FFC53D;border:1px solid rgba(250,140,22,0.15)">Space</div>
+          </div>
+        </div>
+        <div class="arch-arrow">↕</div>
+        <div class="arch-layer">
+          <div class="arch-label">DAO / DB</div>
+          <div class="arch-boxes">
+            <div class="arch-box" style="background:rgba(114,46,209,0.12);color:#B37FEB;border:1px solid rgba(114,46,209,0.25)">GORM v2</div>
+            <div class="arch-box" style="background:rgba(114,46,209,0.12);color:#B37FEB;border:1px solid rgba(114,46,209,0.25)">SQLite</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="footer-logo" href="#">
+    <div class="nav-logo-icon">💬</div>
+    IM
+  </a>
+  <p class="footer-desc">
+    一个仿 QQ NT 风格的网页即时通讯系统<br/>
+    支持私聊、群组、好友管理与个人空间
+  </p>
+  <div class="footer-links">
+    <a href="https://github.com/LFrankl/IM" target="_blank">GitHub</a>
+    <a href="#features">功能特性</a>
+    <a href="#stack">技术栈</a>
+    <a href="#highlights">设计亮点</a>
+  </div>
+  <div class="footer-bottom">
+    Built with Vue 3 + Go · MIT License
+  </div>
+</footer>
+
+<script>
+  // Scroll fade-in animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(el => {
+      if (el.isIntersecting) {
+        el.target.classList.add('visible')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el))
+</script>
+</body>
+</html>
