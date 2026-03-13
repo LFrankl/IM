@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useContactsStore } from '@/stores/contacts'
 import { useAuthStore } from '@/stores/auth'
 import ChatWindow from '@/components/chat/ChatWindow.vue'
 import Avatar from '@/components/common/Avatar.vue'
-import type { Conversation } from '@/types/chat'
+import type { Conversation, Message } from '@/types/chat'
 
 const chat = useChatStore()
 const contacts = useContactsStore()
 const auth = useAuthStore()
 
 const convs = computed(() => chat.conversations)
+const searchKeyword = ref('')
+const isSearching = computed(() => searchKeyword.value.trim().length > 0)
 
 // 当从联系人页面跳转但会话列表里还没有记录时，用好友信息构造临时会话
 const activeConv = computed<Conversation | null>(() => {
@@ -36,8 +38,50 @@ const activeConv = computed<Conversation | null>(() => {
   }
 })
 
+// ── 搜索：联系人昵称匹配 ──
+const contactMatches = computed(() => {
+  const kw = searchKeyword.value.trim().toLowerCase()
+  if (!kw) return []
+  return convs.value.filter((c) => c.name.toLowerCase().includes(kw))
+})
+
+// ── 搜索：聊天消息内容匹配（遍历已缓存的消息）──
+interface MsgMatch {
+  conv: Conversation
+  msg: Message
+  snippet: string   // 含关键词的截取片段
+}
+const messageMatches = computed<MsgMatch[]>(() => {
+  const kw = searchKeyword.value.trim().toLowerCase()
+  if (!kw) return []
+  const results: MsgMatch[] = []
+  for (const [convId, msgs] of Object.entries(chat.messagesCache)) {
+    const conv = convs.value.find((c) => c.id === convId)
+    if (!conv) continue
+    // 只取每个会话里第一条匹配的消息展示
+    for (const msg of [...msgs].reverse()) {
+      if (msg.is_recalled || msg.msg_type !== 'text') continue
+      const raw = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+      let text = ''
+      try { text = (JSON.parse(raw) as { text: string }).text } catch { continue }
+      if (!text.toLowerCase().includes(kw)) continue
+      // 截取关键词前后各 15 字符作为摘要
+      const idx = text.toLowerCase().indexOf(kw)
+      const start = Math.max(0, idx - 15)
+      const end = Math.min(text.length, idx + kw.length + 15)
+      const snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '')
+      results.push({ conv, msg, snippet })
+      break
+    }
+  }
+  return results
+})
+
+function clearSearch() {
+  searchKeyword.value = ''
+}
+
 onMounted(() => {
-  // 只有从联系人页"发消息"跳来时才保留 activeConvId，否则清空
   const state = history.state as { openConv?: string } | null
   if (!state?.openConv) {
     chat.setActiveConv('')
@@ -51,6 +95,11 @@ onUnmounted(() => {
 
 function selectConv(convId: string) {
   chat.setActiveConv(convId)
+}
+
+function selectAndClear(convId: string) {
+  chat.setActiveConv(convId)
+  clearSearch()
 }
 
 function lastMsgPreview(conv: (typeof convs.value)[number]): string {
@@ -84,6 +133,14 @@ function getAvatarSrc(url: string | undefined) {
   if (url.startsWith('http')) return url
   return `http://localhost:8080${url}`
 }
+
+// 关键词高亮：将文本里的关键词包成 <mark>
+function highlight(text: string): string {
+  const kw = searchKeyword.value.trim()
+  if (!kw) return text
+  const re = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+  return text.replace(re, (m) => `<mark>${m}</mark>`)
+}
 </script>
 
 <template>
@@ -94,7 +151,83 @@ function getAvatarSrc(url: string | undefined) {
         <span class="conv-list-title">消息</span>
       </div>
 
-      <div class="conv-items">
+      <!-- 搜索框 -->
+      <div class="search-wrap">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input
+            v-model="searchKeyword"
+            placeholder="搜索"
+            @keydown.esc="clearSearch"
+          />
+          <button v-if="isSearching" class="search-clear" @click="clearSearch">✕</button>
+        </div>
+      </div>
+
+      <!-- 搜索结果面板 -->
+      <div v-if="isSearching" class="search-panel">
+        <!-- 联系人 -->
+        <template v-if="contactMatches.length > 0">
+          <div class="search-section-label">联系人</div>
+          <div
+            v-for="conv in contactMatches"
+            :key="conv.id"
+            class="conv-item"
+            :class="{ active: conv.id === chat.activeConvId }"
+            @click="selectAndClear(conv.id)"
+          >
+            <Avatar
+              :src="getAvatarSrc(conv.avatar)"
+              :name="conv.name"
+              :size="40"
+              :status="contacts.isOnline(conv.target_id) ? 'online' : 'offline'"
+              show-status
+            />
+            <div class="conv-info">
+              <div class="conv-row1">
+                <span class="conv-name" v-html="highlight(conv.name)" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 聊天记录 -->
+        <template v-if="messageMatches.length > 0">
+          <div class="search-section-label">聊天记录</div>
+          <div
+            v-for="item in messageMatches"
+            :key="item.msg.id"
+            class="conv-item"
+            :class="{ active: item.conv.id === chat.activeConvId }"
+            @click="selectAndClear(item.conv.id)"
+          >
+            <Avatar
+              :src="getAvatarSrc(item.conv.avatar)"
+              :name="item.conv.name"
+              :size="40"
+              :status="contacts.isOnline(item.conv.target_id) ? 'online' : 'offline'"
+              show-status
+            />
+            <div class="conv-info">
+              <div class="conv-row1">
+                <span class="conv-name">{{ item.conv.name }}</span>
+                <span class="conv-time">{{ timeStr(item.msg.created_at) }}</span>
+              </div>
+              <div class="conv-row2">
+                <span class="conv-preview msg-snippet" v-html="highlight(item.snippet)" />
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- 无结果 -->
+        <div v-if="contactMatches.length === 0 && messageMatches.length === 0" class="conv-empty">
+          未找到相关内容
+        </div>
+      </div>
+
+      <!-- 正常会话列表 -->
+      <div v-else class="conv-items">
         <div
           v-for="conv in convs"
           :key="conv.id"
@@ -102,7 +235,6 @@ function getAvatarSrc(url: string | undefined) {
           :class="{ active: conv.id === chat.activeConvId }"
           @click="selectConv(conv.id)"
         >
-          <!-- 头像 -->
           <Avatar
             :src="getAvatarSrc(conv.avatar)"
             :name="conv.name"
@@ -110,8 +242,6 @@ function getAvatarSrc(url: string | undefined) {
             :status="conv.chat_type === 'private' ? (contacts.isOnline(conv.target_id) ? 'online' : 'offline') : null"
             :show-status="conv.chat_type === 'private'"
           />
-
-          <!-- 信息 -->
           <div class="conv-info">
             <div class="conv-row1">
               <span class="conv-name">{{ conv.name }}</span>
@@ -163,7 +293,7 @@ function getAvatarSrc(url: string | undefined) {
 }
 
 .conv-list-header {
-  padding: 16px 16px 10px;
+  padding: 16px 16px 6px;
   flex-shrink: 0;
 }
 
@@ -171,6 +301,43 @@ function getAvatarSrc(url: string | undefined) {
   font-size: 18px;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+/* 搜索框 */
+.search-wrap { padding: 0 10px 8px; flex-shrink: 0; }
+
+.search-bar {
+  height: 32px;
+  background: #E8E8E8;
+  border-radius: var(--radius-search);
+  display: flex; align-items: center; padding: 0 10px; gap: 6px;
+  transition: box-shadow 0.15s;
+}
+.search-bar:focus-within { background: white; box-shadow: 0 0 0 1px var(--qq-blue-primary); }
+.search-icon { font-size: 13px; opacity: 0.5; flex-shrink: 0; }
+.search-bar input { flex: 1; font-size: 13px; color: var(--text-primary); background: transparent; user-select: text; min-width: 0; }
+.search-clear {
+  flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-tertiary); color: white; border: none;
+  font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0.7; transition: opacity 0.12s; padding: 0;
+}
+.search-clear:hover { opacity: 1; }
+
+/* 搜索面板 */
+.search-panel { flex: 1; overflow-y: auto; }
+
+.search-section-label {
+  font-size: 11px; color: var(--text-tertiary);
+  padding: 8px 14px 4px; user-select: none;
+}
+
+/* 关键词高亮 */
+.search-panel :deep(mark),
+.msg-snippet :deep(mark) {
+  background: transparent;
+  color: var(--qq-blue-primary);
+  font-weight: 600;
 }
 
 .conv-items {
