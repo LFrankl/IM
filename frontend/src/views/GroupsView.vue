@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGroupStore, type GroupWithMeta } from '@/stores/group'
 import { useAuthStore } from '@/stores/auth'
 import { groupApi } from '@/api/group'
+import type { Message } from '@/types/chat'
 import GroupChatWindow from '@/components/chat/GroupChatWindow.vue'
 import CreateGroupModal from '@/components/group/CreateGroupModal.vue'
 import GroupInviteModal from '@/components/group/GroupInviteModal.vue'
@@ -32,6 +33,59 @@ const filteredMyGroups = computed(() => {
 const externalResults = computed(() =>
   searchResults.value.filter((g) => !store.myGroups.find((m) => m.id === g.id))
 )
+
+// ── 群消息记录搜索 ──
+interface GroupMsgMatch {
+  group: GroupWithMeta
+  msg: Message
+  snippet: string
+}
+const groupMsgMatches = computed<GroupMsgMatch[]>(() => {
+  const kw = searchKeyword.value.trim().toLowerCase()
+  if (!kw) return []
+  const results: GroupMsgMatch[] = []
+  for (const [gidStr, msgs] of Object.entries(store.messagesCache)) {
+    const group = store.myGroups.find((g) => g.id === Number(gidStr))
+    if (!group) continue
+    for (const msg of [...msgs].reverse()) {
+      if (msg.is_recalled || msg.msg_type !== 'text') continue
+      const raw = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+      let text = ''
+      try { text = (JSON.parse(raw) as { text: string }).text } catch { continue }
+      if (!text.toLowerCase().includes(kw)) continue
+      const idx = text.toLowerCase().indexOf(kw)
+      const start = Math.max(0, idx - 15)
+      const end = Math.min(text.length, idx + kw.length + 15)
+      const snippet = (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '')
+      results.push({ group, msg, snippet })
+      break
+    }
+  }
+  return results
+})
+
+// ── 折叠 / 展开 ──
+const COLLAPSE_N = 3
+const expanded = ref(new Set<string>())
+watch(searchKeyword, () => { expanded.value = new Set() })
+
+function toggle(key: string) {
+  const next = new Set(expanded.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  expanded.value = next
+}
+function isExpanded(key: string) { return expanded.value.has(key) }
+function sliced<T>(key: string, list: T[]): T[] {
+  return isExpanded(key) ? list : list.slice(0, COLLAPSE_N)
+}
+
+function highlight(text: string): string {
+  const kw = searchKeyword.value.trim()
+  if (!kw) return text
+  const re = new RegExp(kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')
+  return text.replace(re, (m) => `<mark>${m}</mark>`)
+}
 
 onMounted(() => {
   store.setActiveGroup(null)
@@ -125,6 +179,16 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
   if (avatar.startsWith('http')) return avatar
   return `http://localhost:8080${avatar}`
 }
+
+function timeStr(dateStr: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  const now = new Date()
+  if (d.toDateString() === now.toDateString()) {
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+  }
+  return `${d.getMonth() + 1}/${d.getDate()}`
+}
 </script>
 
 <template>
@@ -159,11 +223,15 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
 
       <!-- 搜索模式：替换整个列表 -->
       <div v-if="isSearching" class="search-panel">
+
         <!-- 我的群组匹配 -->
         <template v-if="filteredMyGroups.length > 0">
-          <div class="search-section-label">我的群组</div>
+          <div class="search-section-label">
+            我的群组
+            <span class="section-count">{{ filteredMyGroups.length }}</span>
+          </div>
           <div
-            v-for="g in filteredMyGroups"
+            v-for="g in sliced('mygroups', filteredMyGroups)"
             :key="g.id"
             class="group-item"
             :class="{ active: g.id === store.activeGroupId }"
@@ -175,7 +243,7 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
             </div>
             <div class="group-info">
               <div class="group-row1">
-                <span class="group-name">{{ g.name }}</span>
+                <span class="group-name" v-html="highlight(g.name)" />
                 <span class="group-count">{{ g.member_count ?? 0 }}人</span>
               </div>
               <div class="group-preview">{{ lastMsgPreview(g) }}</div>
@@ -184,12 +252,63 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
               {{ g.unread_count > 99 ? '99+' : g.unread_count }}
             </span>
           </div>
+          <button v-if="filteredMyGroups.length > COLLAPSE_N" class="section-toggle" @click="toggle('mygroups')">
+            <template v-if="!isExpanded('mygroups')">
+              查看更多 {{ filteredMyGroups.length - COLLAPSE_N }} 条
+              <span class="chevron">›</span>
+            </template>
+            <template v-else>收起 <span class="chevron up">›</span></template>
+          </button>
+        </template>
+
+        <!-- 群聊记录 -->
+        <template v-if="groupMsgMatches.length > 0">
+          <div class="search-section-label">
+            群聊记录
+            <span class="section-count">{{ groupMsgMatches.length }}</span>
+          </div>
+          <div
+            v-for="item in sliced('groupmsgs', groupMsgMatches)"
+            :key="item.msg.id"
+            class="group-item"
+            :class="{ active: item.group.id === store.activeGroupId }"
+            @click="selectAndClear(item.group.id)"
+          >
+            <div class="group-avatar" :style="getGroupAvatarSrc(item.group.avatar) ? {} : { background: avatarColor(item.group.name) }">
+              <img v-if="getGroupAvatarSrc(item.group.avatar)" :src="getGroupAvatarSrc(item.group.avatar)!" class="group-avatar-img" />
+              <template v-else>{{ item.group.name.charAt(0) }}</template>
+            </div>
+            <div class="group-info">
+              <div class="group-row1">
+                <span class="group-name">{{ item.group.name }}</span>
+                <span class="group-count">{{ timeStr(item.msg.created_at) }}</span>
+              </div>
+              <div class="group-preview">
+                <span class="msg-sender-prefix">{{ item.msg.from?.nickname ?? '' }}：</span>
+                <span v-html="highlight(item.snippet)" />
+              </div>
+            </div>
+          </div>
+          <button v-if="groupMsgMatches.length > COLLAPSE_N" class="section-toggle" @click="toggle('groupmsgs')">
+            <template v-if="!isExpanded('groupmsgs')">
+              查看更多 {{ groupMsgMatches.length - COLLAPSE_N }} 条
+              <span class="chevron">›</span>
+            </template>
+            <template v-else>收起 <span class="chevron up">›</span></template>
+          </button>
         </template>
 
         <!-- 外部搜索结果 -->
         <template v-if="externalResults.length > 0">
-          <div class="search-section-label">其他群组</div>
-          <div v-for="g in externalResults" :key="g.id" class="group-item">
+          <div class="search-section-label">
+            其他群组
+            <span class="section-count">{{ externalResults.length }}</span>
+          </div>
+          <div
+            v-for="g in sliced('external', externalResults)"
+            :key="g.id"
+            class="group-item"
+          >
             <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
               <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
               <template v-else>{{ g.name.charAt(0) }}</template>
@@ -200,10 +319,17 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
             </div>
             <button class="join-btn" @click.stop="joinGroup(g.id)">加入</button>
           </div>
+          <button v-if="externalResults.length > COLLAPSE_N" class="section-toggle" @click="toggle('external')">
+            <template v-if="!isExpanded('external')">
+              查看更多 {{ externalResults.length - COLLAPSE_N }} 条
+              <span class="chevron">›</span>
+            </template>
+            <template v-else>收起 <span class="chevron up">›</span></template>
+          </button>
         </template>
 
         <!-- 无结果 -->
-        <div v-if="filteredMyGroups.length === 0 && externalResults.length === 0" class="search-empty">
+        <div v-if="filteredMyGroups.length === 0 && groupMsgMatches.length === 0 && externalResults.length === 0" class="search-empty">
           未找到相关群组
         </div>
       </div>
@@ -354,11 +480,38 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
 /* 搜索面板 */
 .search-panel { flex: 1; overflow-y: auto; }
 .search-section-label {
+  display: flex; align-items: center; gap: 4px;
   font-size: 11px; color: var(--text-tertiary);
   padding: 8px 14px 4px; user-select: none;
 }
+.section-count { font-size: 11px; color: var(--text-tertiary); }
 .search-empty {
   text-align: center; color: var(--text-tertiary); font-size: 13px; padding: 40px 0;
+}
+
+.section-toggle {
+  width: 100%; padding: 6px 14px;
+  text-align: left; font-size: 12px;
+  color: var(--text-secondary); background: none; border: none;
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  transition: color 0.12s;
+}
+.section-toggle:hover { color: var(--qq-blue-primary); }
+
+.chevron {
+  display: inline-block;
+  transform: rotate(90deg);
+  transition: transform 0.2s;
+  line-height: 1;
+}
+.chevron.up { transform: rotate(-90deg); }
+
+.msg-sender-prefix { color: var(--text-tertiary); }
+
+.search-panel :deep(mark) {
+  background: transparent;
+  color: var(--qq-blue-primary);
+  font-weight: 600;
 }
 
 .group-items { flex: 1; overflow-y: auto; }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useContactsStore } from '@/stores/contacts'
 import { useAuthStore } from '@/stores/auth'
@@ -76,6 +76,22 @@ const messageMatches = computed<MsgMatch[]>(() => {
   }
   return results
 })
+
+// ── 折叠 / 展开 ──
+const COLLAPSE_N = 3
+const expanded = ref(new Set<string>())
+watch(searchKeyword, () => { expanded.value = new Set() })
+
+function toggle(key: string) {
+  const next = new Set(expanded.value)
+  if (next.has(key)) next.delete(key)
+  else next.add(key)
+  expanded.value = next
+}
+function isExpanded(key: string) { return expanded.value.has(key) }
+function sliced<T>(key: string, list: T[]): T[] {
+  return isExpanded(key) ? list : list.slice(0, COLLAPSE_N)
+}
 
 function clearSearch() {
   searchKeyword.value = ''
@@ -168,9 +184,12 @@ function highlight(text: string): string {
       <div v-if="isSearching" class="search-panel">
         <!-- 联系人 -->
         <template v-if="contactMatches.length > 0">
-          <div class="search-section-label">联系人</div>
+          <div class="search-section-label">
+            联系人
+            <span class="section-count">{{ contactMatches.length }}</span>
+          </div>
           <div
-            v-for="conv in contactMatches"
+            v-for="conv in sliced('contacts', contactMatches)"
             :key="conv.id"
             class="conv-item"
             :class="{ active: conv.id === chat.activeConvId }"
@@ -189,13 +208,23 @@ function highlight(text: string): string {
               </div>
             </div>
           </div>
+          <button v-if="contactMatches.length > COLLAPSE_N" class="section-toggle" @click="toggle('contacts')">
+            <template v-if="!isExpanded('contacts')">
+              查看更多 {{ contactMatches.length - COLLAPSE_N }} 条
+              <span class="chevron">›</span>
+            </template>
+            <template v-else>收起 <span class="chevron up">›</span></template>
+          </button>
         </template>
 
         <!-- 聊天记录 -->
         <template v-if="messageMatches.length > 0">
-          <div class="search-section-label">聊天记录</div>
+          <div class="search-section-label">
+            聊天记录
+            <span class="section-count">{{ messageMatches.length }}</span>
+          </div>
           <div
-            v-for="item in messageMatches"
+            v-for="item in sliced('messages', messageMatches)"
             :key="item.msg.id"
             class="conv-item"
             :class="{ active: item.conv.id === chat.activeConvId }"
@@ -218,6 +247,13 @@ function highlight(text: string): string {
               </div>
             </div>
           </div>
+          <button v-if="messageMatches.length > COLLAPSE_N" class="section-toggle" @click="toggle('messages')">
+            <template v-if="!isExpanded('messages')">
+              查看更多 {{ messageMatches.length - COLLAPSE_N }} 条
+              <span class="chevron">›</span>
+            </template>
+            <template v-else>收起 <span class="chevron up">›</span></template>
+          </button>
         </template>
 
         <!-- 无结果 -->
@@ -339,6 +375,37 @@ function highlight(text: string): string {
   color: var(--qq-blue-primary);
   font-weight: 600;
 }
+
+.section-count {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.section-toggle {
+  width: 100%;
+  padding: 6px 14px;
+  text-align: left;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.12s;
+}
+.section-toggle:hover { color: var(--qq-blue-primary); }
+
+.chevron {
+  display: inline-block;
+  font-style: normal;
+  transform: rotate(90deg);
+  transition: transform 0.2s;
+  line-height: 1;
+}
+.chevron.up { transform: rotate(-90deg); }
 
 .conv-items {
   flex: 1;
