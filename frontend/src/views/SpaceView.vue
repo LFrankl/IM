@@ -195,7 +195,10 @@ function goToSpace(userId: number) {
       <div class="space-header">
         <div
           class="cover-bg"
-          :style="spaceUser?.cover ? { backgroundImage: `url(${getAvatarSrc(spaceUser.cover)})` } : {}"
+          :style="[
+            spaceUser?.cover ? { backgroundImage: `url(${getAvatarSrc(spaceUser.cover)})` } : {},
+            isSelf ? { cursor: 'pointer' } : {}
+          ]"
           @click="isSelf && ($refs.coverInput as HTMLInputElement).click()"
         >
           <div v-if="isSelf" class="cover-upload-hint">
@@ -362,17 +365,20 @@ function goToSpace(userId: number) {
 /* 头部 */
 .space-header {
   position: relative;
+  background: white;
+  border-radius: 0 0 12px 12px;
   margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 .cover-bg {
-  height: 290px;
+  height: 240px;
   background: linear-gradient(135deg, #1677FF 0%, #52C41A 100%);
   background-size: cover;
   background-position: center;
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px 12px 0 0;
   position: relative;
-  cursor: pointer;
+  cursor: default;
   overflow: hidden;
 }
 
@@ -403,8 +409,9 @@ function goToSpace(userId: number) {
   display: flex;
   align-items: flex-end;
   gap: 16px;
-  padding: 0 24px;
-  margin-top: -36px;
+  padding: 0 24px 12px;
+  /* 头像一半叠在封面底部，文字跟着底部对齐但处于封面以下 */
+  margin-top: -40px;
   position: relative;
   z-index: 1;
 }
@@ -413,22 +420,27 @@ function goToSpace(userId: number) {
   border: 4px solid white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   flex-shrink: 0;
+  /* 头像完整出现在封面底边：80px头像 + 4px边框×2 = 88px，上移40px => 一半叠封面 */
 }
 
 .profile-text {
-  padding-bottom: 8px;
+  /* 文字块底部与头像底部平齐，封面不会遮到文字 */
+  padding-bottom: 4px;
+  /* 加深色文字确保在白色背景上清晰 */
 }
 
 .profile-name {
   font-size: 20px;
   font-weight: 700;
   color: var(--text-primary);
+  line-height: 1.3;
+  /* 文字区整体在封面下方，不需要描边 */
 }
 
 .profile-bio {
   font-size: 13px;
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 /* 发帖框 */
