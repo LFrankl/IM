@@ -219,7 +219,7 @@ function goToSpace(userId: number) {
             :name="spaceUser?.nickname ?? '用户'"
             :size="80"
           />
-          <div class="profile-text">
+          <div class="profile-text-area">
             <div class="profile-name">{{ spaceUser?.nickname ?? '用户空间' }}</div>
             <div class="profile-bio">{{ spaceUser?.bio || (isSelf ? '这个人很懒，什么都没写～' : '') }}</div>
           </div>
@@ -406,27 +406,28 @@ function goToSpace(userId: number) {
 }
 
 .profile-info {
+  position: relative;
   display: flex;
   align-items: flex-end;
-  gap: 16px;
-  padding: 0 24px 12px;
-  /* 头像一半叠在封面底部，文字跟着底部对齐但处于封面以下 */
-  margin-top: -40px;
-  position: relative;
-  z-index: 1;
+  gap: 14px;
+  /* 让整块从封面底边开始：头像 88px（含边框），上移一半 = 44px */
+  padding: 0 24px 14px;
+  margin-top: -44px;
 }
 
 .profile-avatar {
   border: 4px solid white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
   flex-shrink: 0;
-  /* 头像完整出现在封面底边：80px头像 + 4px边框×2 = 88px，上移40px => 一半叠封面 */
+  position: relative;
+  z-index: 2;
 }
 
-.profile-text {
-  /* 文字块底部与头像底部平齐，封面不会遮到文字 */
-  padding-bottom: 4px;
-  /* 加深色文字确保在白色背景上清晰 */
+/* 文字区：不参与上移，另起一行撑开白色区域 */
+.profile-text-area {
+  /* 把文字下推，使其底部与头像底部对齐，且只在白色区域内 */
+  padding-top: 52px; /* 超过一半头像高度，文字必定在封面下方 */
+  padding-bottom: 2px;
 }
 
 .profile-name {
@@ -434,7 +435,6 @@ function goToSpace(userId: number) {
   font-weight: 700;
   color: var(--text-primary);
   line-height: 1.3;
-  /* 文字区整体在封面下方，不需要描边 */
 }
 
 .profile-bio {
