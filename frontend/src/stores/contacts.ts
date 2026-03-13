@@ -8,6 +8,7 @@ export const useContactsStore = defineStore('contacts', () => {
   const friendships = ref<Friendship[]>([])
   const pendingRequests = ref<FriendRequest[]>([])
   const pendingCount = ref(0)
+  const onlineIds = ref<Set<number>>(new Set())
 
   // 按分组聚合
   const friendGroups = computed<FriendGroup[]>(() => {
@@ -65,10 +66,25 @@ export const useContactsStore = defineStore('contacts', () => {
     friendships.value = friendships.value.filter((f) => f.friend_id !== friendId)
   }
 
+  function setOnline(userId: number) {
+    onlineIds.value = new Set([...onlineIds.value, userId])
+  }
+
+  function setOffline(userId: number) {
+    const next = new Set(onlineIds.value)
+    next.delete(userId)
+    onlineIds.value = next
+  }
+
+  function isOnline(userId: number): boolean {
+    return onlineIds.value.has(userId)
+  }
+
   return {
     friendships,
     pendingRequests,
     pendingCount,
+    onlineIds,
     friendGroups,
     fetchFriends,
     fetchRequests,
@@ -77,5 +93,8 @@ export const useContactsStore = defineStore('contacts', () => {
     removePendingRequest,
     addFriend,
     removeFriend,
+    setOnline,
+    setOffline,
+    isOnline,
   }
 })

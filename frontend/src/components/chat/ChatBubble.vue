@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Message } from '@/types/chat'
 import { useAuthStore } from '@/stores/auth'
 import { useUserCard } from '@/composables/useUserCard'
@@ -46,6 +46,20 @@ function getAvatarSrc(url: string | undefined) {
   if (url.startsWith('http')) return url
   return `http://localhost:8080${url}`
 }
+
+const previewSrc = ref<string | null>(null)
+
+function openPreview(src: string) {
+  previewSrc.value = src
+}
+
+function closePreview() {
+  previewSrc.value = null
+}
+
+function onPreviewKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') closePreview()
+}
 </script>
 
 <template>
@@ -72,7 +86,11 @@ function getAvatarSrc(url: string | undefined) {
             <span class="selectable">{{ textContent }}</span>
           </template>
           <template v-else-if="msg.msg_type === 'image'">
-            <img :src="getMediaSrc(parsedContent.url)" class="msg-img" />
+            <img
+              :src="getMediaSrc(parsedContent.url)"
+              class="msg-img"
+              @click="openPreview(getMediaSrc(parsedContent.url))"
+            />
           </template>
           <template v-else-if="msg.msg_type === 'file'">
             <div class="msg-file">
@@ -95,6 +113,20 @@ function getAvatarSrc(url: string | undefined) {
       :size="36"
     />
   </div>
+
+  <!-- 图片预览遮罩 -->
+  <Teleport to="body">
+    <div
+      v-if="previewSrc"
+      class="img-preview-mask"
+      @click="closePreview"
+      @keydown="onPreviewKeydown"
+      tabindex="0"
+    >
+      <img :src="previewSrc" class="img-preview-full" @click.stop />
+      <button class="img-preview-close" @click="closePreview">✕</button>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -166,7 +198,7 @@ function getAvatarSrc(url: string | undefined) {
   max-width: 200px;
   max-height: 200px;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: zoom-in;
   display: block;
 }
 
@@ -182,4 +214,56 @@ function getAvatarSrc(url: string | undefined) {
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ── 图片预览 ── */
+.img-preview-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  cursor: zoom-out;
+  animation: mask-in 0.18s ease;
+}
+
+@keyframes mask-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.img-preview-full {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 6px;
+  object-fit: contain;
+  cursor: default;
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.6);
+  animation: img-in 0.2s ease;
+}
+
+@keyframes img-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.img-preview-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.img-preview-close:hover { background: rgba(255, 255, 255, 0.28); }
 </style>

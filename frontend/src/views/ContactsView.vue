@@ -136,7 +136,7 @@ function sendMessage(f: Friendship) {
                 :src="getAvatarSrc(f.friend?.avatar)"
                 :name="f.friend?.nickname"
                 :size="36"
-                :status="f.friend?.status"
+                :status="contacts.isOnline(f.friend_id) ? 'online' : 'offline'"
                 show-status
               />
               <div class="friend-info">

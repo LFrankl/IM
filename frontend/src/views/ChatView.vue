@@ -98,7 +98,13 @@ function getAvatarSrc(url: string | undefined) {
           @click="selectConv(conv.id)"
         >
           <!-- 头像 -->
-          <Avatar :src="getAvatarSrc(conv.avatar)" :name="conv.name" :size="40" />
+          <Avatar
+            :src="getAvatarSrc(conv.avatar)"
+            :name="conv.name"
+            :size="40"
+            :status="conv.chat_type === 'private' ? (contacts.isOnline(conv.target_id) ? 'online' : 'offline') : null"
+            :show-status="conv.chat_type === 'private'"
+          />
 
           <!-- 信息 -->
           <div class="conv-info">

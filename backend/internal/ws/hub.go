@@ -13,28 +13,52 @@ type Message struct {
 
 // Hub 管理所有 WebSocket 连接
 type Hub struct {
-	mu      sync.RWMutex
-	clients map[int64]*Client // userID -> client
+	mu            sync.RWMutex
+	clients       map[int64]*Client // userID -> client
+	friendsLoader func(userID int64) []int64
 }
 
 var Global = &Hub{
 	clients: make(map[int64]*Client),
 }
 
+// SetFriendsLoader 注入好友 ID 加载函数，避免循环依赖
+func (h *Hub) SetFriendsLoader(fn func(userID int64) []int64) {
+	h.friendsLoader = fn
+}
+
 func (h *Hub) Register(userID int64, client *Client) {
 	h.mu.Lock()
-	defer h.mu.Unlock()
 	// 踢掉旧连接
 	if old, ok := h.clients[userID]; ok {
 		close(old.send)
 	}
 	h.clients[userID] = client
+	h.mu.Unlock()
+
+	// 广播上线给在线好友
+	h.broadcastPresence(userID, "friend_online")
 }
 
 func (h *Hub) Unregister(userID int64) {
 	h.mu.Lock()
-	defer h.mu.Unlock()
 	delete(h.clients, userID)
+	h.mu.Unlock()
+
+	// 广播下线给在线好友
+	h.broadcastPresence(userID, "friend_offline")
+}
+
+// broadcastPresence 向该用户的所有在线好友推送上/下线事件
+func (h *Hub) broadcastPresence(userID int64, msgType string) {
+	if h.friendsLoader == nil {
+		return
+	}
+	friendIDs := h.friendsLoader(userID)
+	payload := map[string]int64{"user_id": userID}
+	for _, fid := range friendIDs {
+		h.SendToUser(fid, msgType, payload)
+	}
 }
 
 // SendToUser 向指定用户发送消息（异步）

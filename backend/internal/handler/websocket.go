@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"im-backend/internal/dao"
 	"im-backend/internal/middleware"
 	"im-backend/internal/service"
 	"im-backend/internal/ws"
@@ -20,13 +21,19 @@ var upgrader = websocket.Upgrader{
 }
 
 type WSHandler struct {
-	chatSvc  *service.ChatService
-	groupSvc *service.GroupService
-	hub      *ws.Hub
+	chatSvc   *service.ChatService
+	groupSvc  *service.GroupService
+	hub       *ws.Hub
+	friendDAO *dao.FriendDAO
 }
 
-func NewWSHandler(chatSvc *service.ChatService, groupSvc *service.GroupService, hub *ws.Hub) *WSHandler {
-	return &WSHandler{chatSvc: chatSvc, groupSvc: groupSvc, hub: hub}
+func NewWSHandler(chatSvc *service.ChatService, groupSvc *service.GroupService, hub *ws.Hub, friendDAO *dao.FriendDAO) *WSHandler {
+	h := &WSHandler{chatSvc: chatSvc, groupSvc: groupSvc, hub: hub, friendDAO: friendDAO}
+	hub.SetFriendsLoader(func(userID int64) []int64 {
+		ids, _ := friendDAO.ListFriendIDs(userID)
+		return ids
+	})
+	return h
 }
 
 // wsIncoming 客户端发来的消息结构

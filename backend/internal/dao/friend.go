@@ -76,6 +76,15 @@ func (d *FriendDAO) UpdateGroupName(userID, friendID int64, groupName string) er
 		Update("group_name", groupName).Error
 }
 
+// ListFriendIDs 返回用户的所有好友 ID（轻量查询，用于在线状态广播）
+func (d *FriendDAO) ListFriendIDs(userID int64) ([]int64, error) {
+	var ids []int64
+	err := d.db.Model(&model.Friendship{}).
+		Where("user_id = ?", userID).
+		Pluck("friend_id", &ids).Error
+	return ids, err
+}
+
 // --- 好友申请 ---
 
 // CreateRequest 发送好友申请（若已有 pending 则复用）

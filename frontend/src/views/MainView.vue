@@ -44,6 +44,12 @@ onMounted(async () => {
       case 'friend_accepted':
         contacts.fetchFriends()
         break
+      case 'friend_online':
+        contacts.setOnline((msg.data as { user_id: number }).user_id)
+        break
+      case 'friend_offline':
+        contacts.setOffline((msg.data as { user_id: number }).user_id)
+        break
       case 'group_invite':
         group.addPendingInvite()
         break
