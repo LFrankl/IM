@@ -2,12 +2,16 @@
 import { computed, ref } from 'vue'
 import type { Message } from '@/types/chat'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
+import { useGroupStore } from '@/stores/group'
 import { useUserCard } from '@/composables/useUserCard'
 import Avatar from '@/components/common/Avatar.vue'
 
 const props = defineProps<{ msg: Message; showName?: boolean }>()
 defineEmits<{ openCard: [userId: number] }>()
 const auth = useAuthStore()
+const chat = useChatStore()
+const group = useGroupStore()
 const { openCard } = useUserCard()
 
 const isSelf = computed(() => Number(props.msg.from_id) === Number(auth.user?.id))
@@ -60,6 +64,43 @@ function closePreview() {
 function onPreviewKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') closePreview()
 }
+
+// ── 右键菜单 ──
+const menuVisible = ref(false)
+const menuX = ref(0)
+const menuY = ref(0)
+const recallError = ref('')
+
+const canRecall = computed(() => {
+  if (!isSelf.value || props.msg.is_recalled) return false
+  return Date.now() - new Date(props.msg.created_at).getTime() < 2 * 60 * 1000
+})
+
+function onContextMenu(e: MouseEvent) {
+  e.preventDefault()
+  menuX.value = e.clientX
+  menuY.value = e.clientY
+  menuVisible.value = true
+  recallError.value = ''
+}
+
+function closeMenu() {
+  menuVisible.value = false
+}
+
+async function doRecall() {
+  closeMenu()
+  try {
+    if (props.msg.chat_type === 'group') {
+      await group.recallMessage(props.msg.id)
+    } else {
+      await chat.recallMessage(props.msg.id)
+    }
+  } catch {
+    recallError.value = '撤回失败'
+    setTimeout(() => { recallError.value = '' }, 2000)
+  }
+}
 </script>
 
 <template>
@@ -81,8 +122,12 @@ function onPreviewKeydown(e: KeyboardEvent) {
       </div>
 
       <div class="bubble-wrap">
-        <div class="bubble" :class="{ 'bubble-self': isSelf, 'bubble-other': !isSelf }">
-          <template v-if="msg.msg_type === 'text'">
+        <div class="bubble" :class="{ 'bubble-self': isSelf, 'bubble-other': !isSelf, 'bubble-recalled': msg.is_recalled }"
+             @contextmenu="onContextMenu">
+          <template v-if="msg.is_recalled">
+            <span class="recalled-text">消息已撤回</span>
+          </template>
+          <template v-else-if="msg.msg_type === 'text'">
             <span class="selectable">{{ textContent }}</span>
           </template>
           <template v-else-if="msg.msg_type === 'image'">
@@ -103,6 +148,7 @@ function onPreviewKeydown(e: KeyboardEvent) {
         </div>
         <span class="msg-time">{{ timeStr }}</span>
       </div>
+      <div v-if="recallError" class="recall-error">{{ recallError }}</div>
     </div>
 
     <!-- 自己头像 -->
@@ -125,6 +171,19 @@ function onPreviewKeydown(e: KeyboardEvent) {
     >
       <img :src="previewSrc" class="img-preview-full" @click.stop />
       <button class="img-preview-close" @click="closePreview">✕</button>
+    </div>
+  </Teleport>
+
+  <!-- 右键菜单 -->
+  <Teleport to="body">
+    <div v-if="menuVisible" class="ctx-overlay" @click="closeMenu" @contextmenu.prevent="closeMenu">
+      <div class="ctx-menu" :style="{ left: menuX + 'px', top: menuY + 'px' }" @click.stop>
+        <div class="ctx-item ctx-item-disabled">转发</div>
+        <div v-if="isSelf && !msg.is_recalled" class="ctx-item" :class="{ 'ctx-item-disabled': !canRecall }"
+             @click="canRecall ? doRecall() : null">
+          撤回{{ canRecall ? '' : '（已超时）' }}
+        </div>
+      </div>
     </div>
   </Teleport>
 </template>
@@ -266,4 +325,64 @@ function onPreviewKeydown(e: KeyboardEvent) {
   transition: background 0.15s;
 }
 .img-preview-close:hover { background: rgba(255, 255, 255, 0.28); }
+
+/* ── 撤回状态 ── */
+.bubble-recalled {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 4px 0 !important;
+}
+
+.recalled-text {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.recall-error {
+  font-size: 11px;
+  color: #ff4d4f;
+  margin-top: 2px;
+  text-align: center;
+}
+
+/* ── 右键菜单 ── */
+.ctx-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+}
+
+.ctx-menu {
+  position: fixed;
+  background: var(--bg-panel, #fff);
+  border: 1px solid var(--border-color, #e8e8e8);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 120px;
+  animation: ctx-in 0.1s ease;
+}
+
+@keyframes ctx-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.ctx-item {
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-primary, #1a1a1a);
+  transition: background 0.12s;
+}
+
+.ctx-item:hover:not(.ctx-item-disabled) {
+  background: var(--bg-hover, #f5f5f5);
+}
+
+.ctx-item-disabled {
+  color: var(--text-tertiary, #aaa);
+  cursor: default;
+}
 </style>

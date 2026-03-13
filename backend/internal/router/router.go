@@ -61,6 +61,7 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.GET("/conversations", h.Chat.ListConversations)
 		authed.GET("/messages/:userId", h.Chat.GetMessages)
 		authed.PUT("/messages/:userId/read", h.Chat.MarkRead)
+		authed.DELETE("/messages/:msgId/recall", h.Chat.RecallMessage)
 		authed.POST("/messages/upload", h.Chat.UploadFile)
 
 		authed.GET("/groups", h.Group.ListMyGroups)
@@ -75,6 +76,7 @@ func New(allowOrigins []string, h *Handlers) *gin.Engine {
 		authed.DELETE("/groups/:id/members/:uid", h.Group.KickMember)
 		authed.DELETE("/groups/:id", h.Group.DisbandGroup)
 		authed.GET("/groups/:id/messages", h.Group.GetMessages)
+		authed.DELETE("/groups/messages/:msgId/recall", h.Group.RecallMessage)
 		authed.PUT("/groups/:id/settings", h.Group.UpdateSettings)
 		authed.POST("/groups/:id/avatar", h.Group.UpdateAvatar)
 		authed.POST("/groups/:id/invites", h.Group.InviteMember)

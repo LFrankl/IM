@@ -21,7 +21,14 @@ func NewChatService(msgDAO *dao.MessageDAO, friendDAO *dao.FriendDAO, userDAO *d
 	return &ChatService{msgDAO: msgDAO, friendDAO: friendDAO, userDAO: userDAO, hub: hub}
 }
 
-var ErrNotFriendChat = errors.New("请先添加对方为好友")
+var (
+	ErrNotFriendChat   = errors.New("请先添加对方为好友")
+	ErrRecallTimeout   = errors.New("超过撤回时限（2分钟）")
+	ErrRecallForbidden = errors.New("无权撤回此消息")
+	ErrMsgNotFound     = errors.New("消息不存在")
+)
+
+const recallWindow = 2 * time.Minute
 
 type SendMsgInput struct {
 	FromID  int64
@@ -94,6 +101,31 @@ type ConversationDTO struct {
 	LastMessage *model.Message `json:"last_message"`
 	UnreadCount int64        `json:"unread_count"`
 	UpdatedAt   time.Time    `json:"updated_at"`
+}
+
+// RecallMessage 撤回私聊消息
+func (s *ChatService) RecallMessage(userID, msgID int64) error {
+	msg, err := s.msgDAO.GetByID(msgID)
+	if err != nil || msg == nil {
+		return ErrMsgNotFound
+	}
+	if msg.FromID != userID {
+		return ErrRecallForbidden
+	}
+	if msg.ChatType != "private" {
+		return ErrRecallForbidden
+	}
+	if time.Since(msg.CreatedAt) > recallWindow {
+		return ErrRecallTimeout
+	}
+	if err := s.msgDAO.Recall(msgID); err != nil {
+		return err
+	}
+	// 通知双方
+	payload := map[string]any{"msg_id": msgID, "chat_type": "private", "to_id": msg.ToID, "from_id": msg.FromID}
+	s.hub.SendToUser(msg.ToID, "message_recalled", payload)
+	s.hub.SendToUser(msg.FromID, "message_recalled", payload)
+	return nil
 }
 
 // ListConversations 获取会话列表

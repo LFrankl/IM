@@ -25,6 +25,7 @@ export interface Message {
   msg_type: MsgType
   content: TextContent | ImageContent | FileContent
   is_read: boolean
+  is_recalled?: boolean
   created_at: string
   from?: {
     id: number
@@ -48,6 +49,7 @@ export interface Conversation {
 export type WSMessageType =
   | 'message'
   | 'message_sent'
+  | 'message_recalled'
   | 'friend_request'
   | 'friend_accepted'
   | 'friend_online'

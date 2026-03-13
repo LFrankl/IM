@@ -305,3 +305,26 @@ func (h *GroupHandler) GetMessages(c *gin.Context) {
 	}
 	response.OK(c, msgs)
 }
+
+func (h *GroupHandler) RecallMessage(c *gin.Context) {
+	msgID, err := strconv.ParseInt(c.Param("msgId"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的消息ID")
+		return
+	}
+	userID := middleware.GetUserID(c)
+	if err := h.groupSvc.RecallGroupMessage(userID, msgID); err != nil {
+		switch err {
+		case service.ErrRecallTimeout:
+			response.Fail(c, 400, err.Error())
+		case service.ErrRecallForbidden:
+			response.Fail(c, 403, err.Error())
+		case service.ErrMsgNotFound:
+			response.Fail(c, 404, err.Error())
+		default:
+			response.InternalError(c)
+		}
+		return
+	}
+	response.OK(c, nil)
+}

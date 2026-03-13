@@ -53,6 +53,15 @@ onMounted(async () => {
       case 'group_invite':
         group.addPendingInvite()
         break
+      case 'message_recalled': {
+        const d = msg.data as { msg_id: number; chat_type: string }
+        if (d.chat_type === 'group') {
+          group.applyRecall(d.msg_id)
+        } else {
+          chat.applyRecall(d.msg_id)
+        }
+        break
+      }
     }
   })
 

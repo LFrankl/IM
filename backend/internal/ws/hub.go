@@ -13,9 +13,10 @@ type Message struct {
 
 // Hub 管理所有 WebSocket 连接
 type Hub struct {
-	mu            sync.RWMutex
-	clients       map[int64]*Client // userID -> client
-	friendsLoader func(userID int64) []int64
+	mu             sync.RWMutex
+	clients        map[int64]*Client // userID -> client
+	friendsLoader  func(userID int64) []int64
+	statusUpdater  func(userID int64, status string)
 }
 
 var Global = &Hub{
@@ -27,6 +28,11 @@ func (h *Hub) SetFriendsLoader(fn func(userID int64) []int64) {
 	h.friendsLoader = fn
 }
 
+// SetStatusUpdater 注入用户状态更新函数
+func (h *Hub) SetStatusUpdater(fn func(userID int64, status string)) {
+	h.statusUpdater = fn
+}
+
 func (h *Hub) Register(userID int64, client *Client) {
 	h.mu.Lock()
 	// 踢掉旧连接
@@ -36,6 +42,10 @@ func (h *Hub) Register(userID int64, client *Client) {
 	h.clients[userID] = client
 	h.mu.Unlock()
 
+	// 更新数据库状态
+	if h.statusUpdater != nil {
+		h.statusUpdater(userID, "online")
+	}
 	// 广播上线给在线好友
 	h.broadcastPresence(userID, "friend_online")
 }
@@ -45,6 +55,10 @@ func (h *Hub) Unregister(userID int64) {
 	delete(h.clients, userID)
 	h.mu.Unlock()
 
+	// 更新数据库状态
+	if h.statusUpdater != nil {
+		h.statusUpdater(userID, "offline")
+	}
 	// 广播下线给在线好友
 	h.broadcastPresence(userID, "friend_offline")
 }

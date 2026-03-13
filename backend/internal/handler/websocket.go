@@ -27,11 +27,14 @@ type WSHandler struct {
 	friendDAO *dao.FriendDAO
 }
 
-func NewWSHandler(chatSvc *service.ChatService, groupSvc *service.GroupService, hub *ws.Hub, friendDAO *dao.FriendDAO) *WSHandler {
+func NewWSHandler(chatSvc *service.ChatService, groupSvc *service.GroupService, hub *ws.Hub, friendDAO *dao.FriendDAO, userDAO *dao.UserDAO) *WSHandler {
 	h := &WSHandler{chatSvc: chatSvc, groupSvc: groupSvc, hub: hub, friendDAO: friendDAO}
 	hub.SetFriendsLoader(func(userID int64) []int64 {
 		ids, _ := friendDAO.ListFriendIDs(userID)
 		return ids
+	})
+	hub.SetStatusUpdater(func(userID int64, status string) {
+		_ = userDAO.UpdateStatus(userID, status)
 	})
 	return h
 }

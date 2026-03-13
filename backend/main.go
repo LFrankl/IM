@@ -76,7 +76,7 @@ func main() {
 		Chat:   handler.NewChatHandler(chatSvc),
 		Group:  handler.NewGroupHandler(groupSvc),
 		Space:  handler.NewSpaceHandler(spaceSvc),
-		WS:     handler.NewWSHandler(chatSvc, groupSvc, ws.Global, friendDAO),
+		WS:     handler.NewWSHandler(chatSvc, groupSvc, ws.Global, friendDAO, userDAO),
 	}
 
 	r := router.New(cfg.CORS.AllowOrigins, handlers)

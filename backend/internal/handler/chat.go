@@ -63,6 +63,29 @@ func (h *ChatHandler) MarkRead(c *gin.Context) {
 	response.OK(c, nil)
 }
 
+func (h *ChatHandler) RecallMessage(c *gin.Context) {
+	msgID, err := strconv.ParseInt(c.Param("msgId"), 10, 64)
+	if err != nil {
+		response.BadRequest(c, "无效的消息ID")
+		return
+	}
+	userID := middleware.GetUserID(c)
+	if err := h.chatSvc.RecallMessage(userID, msgID); err != nil {
+		switch err {
+		case service.ErrRecallTimeout:
+			response.Fail(c, 400, err.Error())
+		case service.ErrRecallForbidden:
+			response.Fail(c, 403, err.Error())
+		case service.ErrMsgNotFound:
+			response.Fail(c, 404, err.Error())
+		default:
+			response.InternalError(c)
+		}
+		return
+	}
+	response.OK(c, nil)
+}
+
 func (h *ChatHandler) UploadFile(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {

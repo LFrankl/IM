@@ -142,6 +142,22 @@ type ConversationRow struct {
 	LastMsg model.Message
 }
 
+// GetByID 获取单条消息
+func (d *MessageDAO) GetByID(id int64) (*model.Message, error) {
+	var msg model.Message
+	err := d.db.First(&msg, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &msg, nil
+}
+
+// Recall 标记消息已撤回
+func (d *MessageDAO) Recall(id int64) error {
+	return d.db.Model(&model.Message{}).Where("id = ?", id).
+		Updates(map[string]any{"is_recalled": true, "content": `{"text":"[消息已撤回]"}`}).Error
+}
+
 // BuildTextContent 构建文本消息 JSON
 func BuildTextContent(text string) string {
 	b, _ := json.Marshal(map[string]string{"text": text})

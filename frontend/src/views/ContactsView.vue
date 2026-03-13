@@ -201,7 +201,7 @@ function sendMessage(f: Friendship) {
               :src="getAvatarSrc(selectedFriendship.friend?.avatar)"
               :name="selectedFriendship.friend?.nickname"
               :size="80"
-              :status="selectedFriendship.friend?.status"
+              :status="contacts.isOnline(selectedFriendship.friend_id) ? 'online' : 'offline'"
               show-status
             />
           </div>
@@ -215,9 +215,8 @@ function sendMessage(f: Friendship) {
           <div v-if="selectedFriendship.friend?.bio" class="profile-bio">
             {{ selectedFriendship.friend.bio }}
           </div>
-          <div class="profile-status-tag" :class="selectedFriendship.friend?.status">
-            {{ selectedFriendship.friend?.status === 'online' ? '在线'
-               : selectedFriendship.friend?.status === 'busy' ? '忙碌' : '离线' }}
+          <div class="profile-status-tag" :class="contacts.isOnline(selectedFriendship.friend_id) ? 'online' : 'offline'">
+            {{ contacts.isOnline(selectedFriendship.friend_id) ? '在线' : '离线' }}
           </div>
           <div class="profile-actions">
             <button class="send-msg-btn" @click="sendMessage(selectedFriendship)">发消息</button>

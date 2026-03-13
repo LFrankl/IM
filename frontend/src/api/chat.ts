@@ -13,4 +13,7 @@ export const chatApi = {
   markRead(fromUserId: number) {
     return client.put(`/api/messages/${fromUserId}/read`)
   },
+  recallMessage(msgId: number) {
+    return client.delete(`/api/messages/${msgId}/recall`)
+  },
 }

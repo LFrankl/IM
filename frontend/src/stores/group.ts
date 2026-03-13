@@ -96,6 +96,19 @@ export const useGroupStore = defineStore('group', () => {
     )
   }
 
+  async function recallMessage(msgId: number) {
+    await groupApi.recallMessage(msgId)
+    applyRecall(msgId)
+  }
+
+  function applyRecall(msgId: number) {
+    for (const gid in messagesCache.value) {
+      messagesCache.value[Number(gid)] = messagesCache.value[Number(gid)].map((m) =>
+        m.id === msgId ? { ...m, is_recalled: true } : m
+      )
+    }
+  }
+
   function removeGroup(id: number) {
     myGroups.value = myGroups.value.filter((g) => g.id !== id)
     if (activeGroupId.value === id) activeGroupId.value = null
@@ -126,6 +139,8 @@ export const useGroupStore = defineStore('group', () => {
     confirmGroupSent,
     removeGroup,
     updateGroupAvatar,
+    recallMessage,
+    applyRecall,
   }
 })
 

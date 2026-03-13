@@ -297,3 +297,34 @@ func (s *GroupService) HandleInvite(userID, inviteID int64, accept bool) error {
 func (s *GroupService) ListMyInvites(userID int64) ([]model.GroupInvite, error) {
 	return s.groupDAO.ListPendingInvitesForUser(userID)
 }
+
+// RecallGroupMessage 撤回群聊消息（本人或群主均可）
+func (s *GroupService) RecallGroupMessage(userID, msgID int64) error {
+	msg, err := s.msgDAO.GetByID(msgID)
+	if err != nil || msg == nil {
+		return ErrMsgNotFound
+	}
+	if msg.ChatType != "group" {
+		return ErrRecallForbidden
+	}
+	if time.Since(msg.CreatedAt) > recallWindow {
+		return ErrRecallTimeout
+	}
+	// 只有消息发送者或群主可以撤回
+	if msg.FromID != userID {
+		g, err := s.groupDAO.GetByID(msg.ToID)
+		if err != nil || g == nil || g.OwnerID != userID {
+			return ErrRecallForbidden
+		}
+	}
+	if err := s.msgDAO.Recall(msgID); err != nil {
+		return err
+	}
+	// 广播给群内所有在线成员
+	members, _ := s.groupDAO.GetMembers(msg.ToID)
+	payload := map[string]any{"msg_id": msgID, "chat_type": "group", "to_id": msg.ToID, "from_id": msg.FromID}
+	for _, m := range members {
+		s.hub.SendToUser(m.UserID, "message_recalled", payload)
+	}
+	return nil
+}

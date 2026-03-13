@@ -106,6 +106,19 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  async function recallMessage(msgId: number) {
+    await chatApi.recallMessage(msgId)
+    applyRecall(msgId)
+  }
+
+  function applyRecall(msgId: number) {
+    for (const convId in messagesCache.value) {
+      messagesCache.value[convId] = messagesCache.value[convId].map((m) =>
+        m.id === msgId ? { ...m, is_recalled: true } : m
+      )
+    }
+  }
+
   return {
     conversations,
     activeConvId,
@@ -120,5 +133,7 @@ export const useChatStore = defineStore('chat', () => {
     receiveMessage,
     confirmSent,
     clearUnread,
+    recallMessage,
+    applyRecall,
   }
 })

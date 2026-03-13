@@ -51,4 +51,7 @@ export const groupApi = {
     form.append('avatar', file)
     return client.post<{ avatar: string }>(`/api/groups/${id}/avatar`, form)
   },
+  recallMessage(msgId: number) {
+    return client.delete(`/api/groups/messages/${msgId}/recall`)
+  },
 }
