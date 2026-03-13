@@ -19,6 +19,19 @@ const searchResults = ref<Group[]>([])
 
 const groups = computed(() => store.myGroups)
 const activeGroup = computed(() => store.activeGroup())
+const isSearching = computed(() => searchKeyword.value.trim().length > 0)
+
+// 本地实时过滤：我的群组中匹配关键词的
+const filteredMyGroups = computed(() => {
+  const kw = searchKeyword.value.trim().toLowerCase()
+  if (!kw) return []
+  return store.myGroups.filter((g) => g.name.toLowerCase().includes(kw))
+})
+
+// 外部搜索结果中不在我群里的
+const externalResults = computed(() =>
+  searchResults.value.filter((g) => !store.myGroups.find((m) => m.id === g.id))
+)
 
 onMounted(() => {
   store.setActiveGroup(null)
@@ -31,6 +44,16 @@ onUnmounted(() => {
 
 function selectGroup(id: number) {
   store.setActiveGroup(id)
+}
+
+function selectAndClear(id: number) {
+  store.setActiveGroup(id)
+  clearSearch()
+}
+
+function clearSearch() {
+  searchKeyword.value = ''
+  searchResults.value = []
 }
 
 async function doSearch() {
@@ -47,8 +70,7 @@ async function joinGroup(id: number) {
   await groupApi.join(id)
   await store.fetchMyGroups()
   store.setActiveGroup(id)
-  searchKeyword.value = ''
-  searchResults.value = []
+  clearSearch()
 }
 
 function onCreated(g: Group) {
@@ -123,39 +145,71 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
       </div>
 
       <div class="search-wrap">
-        <div class="search-bar">
+        <div class="search-bar" :class="{ focused: isSearching }">
           <span class="search-icon">🔍</span>
           <input
             v-model="searchKeyword"
             placeholder="搜索群组"
             @input="doSearch"
-            @keydown.enter="doSearch"
+            @keydown.esc="clearSearch"
           />
+          <button v-if="isSearching" class="search-clear" @click="clearSearch">✕</button>
         </div>
       </div>
 
-      <!-- 搜索结果 -->
-      <div v-if="searchKeyword && searchResults.length > 0" class="search-results">
-        <div class="search-section-title">搜索结果</div>
-        <div v-for="g in searchResults" :key="g.id" class="group-item">
-          <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
-            <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
-            <template v-else>{{ g.name.charAt(0) }}</template>
+      <!-- 搜索模式：替换整个列表 -->
+      <div v-if="isSearching" class="search-panel">
+        <!-- 我的群组匹配 -->
+        <template v-if="filteredMyGroups.length > 0">
+          <div class="search-section-label">我的群组</div>
+          <div
+            v-for="g in filteredMyGroups"
+            :key="g.id"
+            class="group-item"
+            :class="{ active: g.id === store.activeGroupId }"
+            @click="selectAndClear(g.id)"
+          >
+            <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
+              <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
+              <template v-else>{{ g.name.charAt(0) }}</template>
+            </div>
+            <div class="group-info">
+              <div class="group-row1">
+                <span class="group-name">{{ g.name }}</span>
+                <span class="group-count">{{ g.member_count ?? 0 }}人</span>
+              </div>
+              <div class="group-preview">{{ lastMsgPreview(g) }}</div>
+            </div>
+            <span v-if="g.unread_count && g.unread_count > 0" class="unread-badge">
+              {{ g.unread_count > 99 ? '99+' : g.unread_count }}
+            </span>
           </div>
-          <div class="group-info">
-            <span class="group-name">{{ g.name }}</span>
+        </template>
+
+        <!-- 外部搜索结果 -->
+        <template v-if="externalResults.length > 0">
+          <div class="search-section-label">其他群组</div>
+          <div v-for="g in externalResults" :key="g.id" class="group-item">
+            <div class="group-avatar" :style="getGroupAvatarSrc(g.avatar) ? {} : { background: avatarColor(g.name) }">
+              <img v-if="getGroupAvatarSrc(g.avatar)" :src="getGroupAvatarSrc(g.avatar)!" class="group-avatar-img" />
+              <template v-else>{{ g.name.charAt(0) }}</template>
+            </div>
+            <div class="group-info">
+              <span class="group-name">{{ g.name }}</span>
+              <div class="group-preview">{{ g.member_count ?? 0 }}人</div>
+            </div>
+            <button class="join-btn" @click.stop="joinGroup(g.id)">加入</button>
           </div>
-          <button
-            v-if="!groups.find(myG => myG.id === g.id)"
-            class="join-btn"
-            @click="joinGroup(g.id)"
-          >加入</button>
-          <span v-else class="joined-tag">已加入</span>
+        </template>
+
+        <!-- 无结果 -->
+        <div v-if="filteredMyGroups.length === 0 && externalResults.length === 0" class="search-empty">
+          未找到相关群组
         </div>
       </div>
 
-      <!-- 我的群 -->
-      <div class="group-items">
+      <!-- 正常模式：我的群列表 -->
+      <div v-else class="group-items">
         <div
           v-for="g in groups"
           :key="g.id"
@@ -178,7 +232,7 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
             {{ g.unread_count > 99 ? '99+' : g.unread_count }}
           </span>
         </div>
-        <div v-if="groups.length === 0 && !searchKeyword" class="empty-groups">
+        <div v-if="groups.length === 0" class="empty-groups">
           暂无群组，点击 ＋ 创建
         </div>
       </div>
@@ -284,13 +338,28 @@ function getGroupAvatarSrc(avatar: string | undefined): string | null {
   height: 32px; background: #E8E8E8;
   border-radius: var(--radius-search);
   display: flex; align-items: center; padding: 0 10px; gap: 6px;
+  transition: box-shadow 0.15s;
 }
 .search-bar:focus-within { background: white; box-shadow: 0 0 0 1px var(--qq-blue-primary); }
-.search-icon { font-size: 13px; opacity: 0.5; }
-.search-bar input { flex: 1; font-size: 13px; color: var(--text-primary); background: transparent; user-select: text; }
+.search-icon { font-size: 13px; opacity: 0.5; flex-shrink: 0; }
+.search-bar input { flex: 1; font-size: 13px; color: var(--text-primary); background: transparent; user-select: text; min-width: 0; }
+.search-clear {
+  flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-tertiary); color: white; border: none;
+  font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  opacity: 0.7; transition: opacity 0.12s; padding: 0;
+}
+.search-clear:hover { opacity: 1; }
 
-.search-results { border-bottom: 1px solid var(--border-light); padding-bottom: 4px; flex-shrink: 0; }
-.search-section-title { font-size: 11px; color: var(--text-tertiary); padding: 6px 14px 2px; }
+/* 搜索面板 */
+.search-panel { flex: 1; overflow-y: auto; }
+.search-section-label {
+  font-size: 11px; color: var(--text-tertiary);
+  padding: 8px 14px 4px; user-select: none;
+}
+.search-empty {
+  text-align: center; color: var(--text-tertiary); font-size: 13px; padding: 40px 0;
+}
 
 .group-items { flex: 1; overflow-y: auto; }
 
